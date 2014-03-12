@@ -1,0 +1,99 @@
+#!/bin/sh -e
+#
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+##############################################################################
+# This is a script to automate checks and tasks for our Cordova ESR 
+# release process. It runs sanity checks and helps us get our git repos
+# loaded correctly. It should be invoked inside the repo that has a fix.
+
+PLATFORM_REPO=cordova-android
+REMOTE_ORIGIN=corimf
+BRANCH=2.6.0esr
+NEW_TAG=WL6000u1
+PREV_TAG=WL6100
+
+check_rc() {
+    SAVE_RC=$?
+    if [ $SAVE_RC != 0 ]
+    then
+        echo "Failed."
+        exit $RC
+    else
+        echo "Success."
+    fi
+}
+
+trap check_rc EXIT
+
+echo "Checking that this is being run in a git repo..."
+git status --porcelain
+
+echo "Checking that we are on an ESR branch..."
+git status --porcelain -b | grep '^##' | grep 'esr$'
+
+echo "Checking that we are on the expected ESR branch $BRANCH..."
+git status --porcelain -b | grep '^##' | grep "$BRANCH\$"
+
+echo "Doing a pull from $REMOTE_ORIGIN to make sure we are up-to-date..."
+git pull $REMOTE_ORIGIN $BRANCH
+
+echo "Fetching all the tags from $REMOTE_ORIGIN to make sure we are up-to-date..."
+git fetch --tags $REMOTE_ORIGIN
+
+echo "Checking that the IBM-MODIFICATIONS.txt file exists..."
+test -f IBM-MODIFICATIONS.txt
+
+echo "Checking that there are no untracked files..."
+RESULT=`git status --porcelain --untracked-files=all | grep '^??' || true`
+test -z "$RESULT"
+
+# Checking that there are no uncommitted additions.
+RESULT=`git status --porcelain | grep '^A ' || true`
+test -z "$RESULT"
+
+echo "Checking that there is a change to the IBM-MODIFICATIONS.txt file since the previous tag $PREV_TAG..."
+RESULT=`git log --format=oneline $PREV_TAG.. IBM-MODIFICATIONS.txt | wc -l`
+test "$RESULT" -gt 0
+
+echo "Checking that the new tag ends in uNUM..."
+echo $NEW_TAG | grep 'u[0-9]\{1,\}$'
+
+echo "Checking that the new tag is present in the local repo..."
+git rev-parse --verify $NEW_TAG
+
+echo "Checking that there are no commits in the local repo past the new tag..."
+RESULT=`git log --format=oneline $NEW_TAG..`
+test -z "$RESULT"
+
+echo "Checking that the local commits are in the remote repo..."
+RESULT=`git diff --shortstat $REMOTE_ORIGIN/$BRANCH`
+test -z "$RESULT"
+
+echo "Checking that the local tag is in the remote repo..."
+RESULT=`git ls-remote --tags $REMOTE_ORIGIN $NEW_TAG`
+test ! -z "$RESULT"
+
+# Checking that the hash of the local tag is the same as the remote.
+LOCAL=`git rev-parse $NEW_TAG`
+REMOTE=`git ls-remote --tags $REMOTE_ORIGIN $NEW_TAG | cut -f1`
+test "$LOCAL" = "$REMOTE"
+
+echo "All tests complete."
