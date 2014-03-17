@@ -16,23 +16,35 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-##############################################################################
+###############################################################################
+# Use the -e option so the script will fail on the first non-zero return code.
+
 # This is a script to tag all the repos when a fix is generated. Since
 # generally only about 1 repo gets touched for a fix, it will save time
 # to automate the tagging of the rest of them. This script assumes that
 # all the repos have the fix checked in, and are in the desired state
-# (because you would already be in the desired state immediately after
-# testing your fix).
+# (because you would already be in the desired state immediately after 
+# testing your fix). 
 
-# SKIP_REPOS is a space-separated list of repos that already have the tag
-SKIP_REPOS=cordova-android
-REMOTE_ORIGIN=corimf
-BRANCH=3.1.0esr
-NEW_TAG=WL6100u3
-PLUGIN_COUNT=18
+if [ "$1" = "" ]
+then
+    echo "Loading the settings from corimf-settings..."
+    source corimf-settings
+else
+    echo "Loading the settings from $1"
+    source "$1"
+fi
 
-PLUGINS="cordova-plugin-battery-status cordova-plugin-camera cordova-plugin-console cordova-plugin-contacts cordova-plugin-device cordova-plugin-device-motion cordova-plugin-device-orientation cordova-plugin-dialogs cordova-plugin-file cordova-plugin-file-transfer cordova-plugin-geolocation cordova-plugin-globalization cordova-plugin-inappbrowser cordova-plugin-media cordova-plugin-media-capture cordova-plugin-network-information cordova-plugin-splashscreen cordova-plugin-vibration"
+echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
+echo "BRANCH=$BRANCH"
+echo "NEW_TAG=$NEW_TAG"
+
+/bin/echo -n "Hit ENTER to continue: "
+read ANSWER
+
+# Shouldn't need to change anything below here.
 
 check_rc() {
     SAVE_RC=$?
@@ -47,113 +59,58 @@ check_rc() {
 
 trap check_rc EXIT
 
-FIRST_SKIP_REPO=`echo "$SKIP_REPOS" | cut -f1 -d' '`
+echo "Checking that we are one dir above the git repo..."
+test -d $PLATFORM_REPO
 
-echo "Checking that we are one dir above the git repos..."
-test -d $FIRST_SKIP_REPO
+echo "Checking major version number..."
+MAJOR=`echo $BRANCH | cut -f1 -d.`
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
 
-echo "Um, this needs some more work before it gets used."
-exit 1
+if [ "$MAJOR" -ge 3 ]
+then
+    echo "Checking that the plugin count is $PLUGIN_COUNT..."
+    COUNT=0
+    for PLUGIN in $PLUGINS
+    do
+        COUNT=`expr $COUNT + 1`
+    done
+    test "$COUNT" == "$PLUGIN_COUNT"
+else
+    echo "Skipping all plugins since version is $MAJOR"
+    PLUGINS=
+    PLUGMAN_REPO=
+fi
 
-echo "Checking that the plugin count is $PLUGIN_COUNT..."
-COUNT=0
-for PLUGIN in $PLUGINS
+echo "Checking that each repo exists..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
-    COUNT=`expr $COUNT + 1`
-done
-test "$COUNT" == "$PLUGIN_COUNT"
-
-echo "Checking that each plugin repo exists..."
-for PLUGIN in $PLUGINS
-do
-    test -d $PLUGIN
-done
-
-echo "Checking that we are on the expected ESR branch $BRANCH for platform and plugins..."
-for DIR in $PLATFORM_REPO $PLUGINS
-do
-    /bin/echo -n "$DIR: "
-    cd $DIR
-    git status --porcelain -b | grep '^##' | grep "$BRANCH\$"
-    cd ..
+    test -d $DIR
 done
 
-echo "Doing a git pull and tags fetch on platform and plugins to make sure we are up-to-date..."
-for DIR in $PLATFORM_REPO $PLUGINS
+echo "Checking that $REMOTE_ORIGIN is a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
-    /bin/echo -n "$DIR: "
-    cd $DIR
+    pushd $DIR
+    git remote | grep $REMOTE_ORIGIN
+    popd
+done
+
+echo "Checking out $BRANCH for platforms and plugins and others..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git checkout $BRANCH || git checkout -b $BRANCH $REMOTE_ORIGIN/$BRANCH
     git pull $REMOTE_ORIGIN $BRANCH
-    git fetch --tags $REMOTE_ORIGIN
-    cd ..
+    git fetch --tags
+    popd
 done
 
-echo "Checking that the platform and plugins have the tag $NEW_TAG..."
-for DIR in $PLATFORM_REPO $PLUGINS
+echo "Tagging the end of $BRANCH for platforms and plugins and others..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
-    /bin/echo -n "$DIR: "
-    cd $DIR
-    git rev-parse $NEW_TAG
-    cd ..
+    pushd $DIR
+    echo "Creating tag $NEW_TAG"
+    git tag $NEW_TAG
+    git push $REMOTE_ORIGIN $NEW_TAG
+    popd
 done
-
-echo "Checking that the platform and plugins are checked out at the tag $NEW_TAG..."
-for DIR in $PLATFORM_REPO $PLUGINS
-do
-    /bin/echo -n "$DIR: "
-    cd $DIR
-    ACTUAL=`git log -1 --format=oneline | cut -f1 -d' '`
-    DESIRED=`git rev-parse $NEW_TAG`
-    test "$ACTUAL" == "$DESIRED"
-    cd ..
-done
-
-
-exit 0
-
-echo "Checking that each plugin repo is present..."
-echo "Checking that each plugin is checked out at the correct tag"
-
-
-echo "Checking that we are on an ESR branch..."
-git status --porcelain -b | grep '^##' | grep 'esr$'
-
-echo "Checking that the IBM-MODIFICATIONS.txt file exists..."
-test -f IBM-MODIFICATIONS.txt
-
-echo "Checking that there are no untracked files..."
-RESULT=`git status --porcelain --untracked-files=all | grep '^??' || true`
-test -z "$RESULT"
-
-# Checking that there are no uncommitted additions.
-RESULT=`git status --porcelain | grep '^A ' || true`
-test -z "$RESULT"
-
-echo "Checking that there is a change to the IBM-MODIFICATIONS.txt file since the previous tag $PREV_TAG..."
-RESULT=`git log --format=oneline $PREV_TAG.. IBM-MODIFICATIONS.txt | wc -l`
-test "$RESULT" -gt 0
-
-echo "Checking that the new tag ends in uNUM..."
-echo $NEW_TAG | grep 'u[0-9]\{1,\}$'
-
-echo "Checking that the new tag is present in the local repo..."
-git rev-parse --verify $NEW_TAG
-
-echo "Checking that there are no commits in the local repo past the new tag..."
-RESULT=`git log --format=oneline $NEW_TAG..`
-test -z "$RESULT"
-
-echo "Checking that the local commits are in the remote repo..."
-RESULT=`git diff --shortstat $REMOTE_ORIGIN/$BRANCH`
-test -z "$RESULT"
-
-echo "Checking that the local tag is in the remote repo..."
-RESULT=`git ls-remote --tags $REMOTE_ORIGIN $NEW_TAG`
-test ! -z "$RESULT"
-
-# Checking that the hash of the local tag is the same as the remote.
-LOCAL=`git rev-parse $NEW_TAG`
-REMOTE=`git ls-remote --tags $REMOTE_ORIGIN $NEW_TAG | cut -f1`
-test "$LOCAL" = "$REMOTE"
-
-echo "All tests complete."
