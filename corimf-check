@@ -24,11 +24,23 @@
 # release process. It runs sanity checks and helps us get our git repos
 # loaded correctly. It should be invoked inside the repo that has a fix.
 
-PLATFORM_REPO=cordova-android
-REMOTE_ORIGIN=corimf
-BRANCH=2.6.0esr
-NEW_TAG=WL6000u1
-PREV_TAG=WL6100
+if [ "$1" = "" ]
+then
+    echo "Loading the settings from corimf-settings..."
+    source corimf-settings
+else
+    echo "Loading the settings from $1"
+    source "$1"
+fi
+
+echo "PLATFORM_REPO=$PLATFORM_REPO"
+echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
+echo "BRANCH=$BRANCH"
+echo "NEW_TAG=$NEW_TAG"
+echo "PREV_TAG=$PREV_TAG"
+
+/bin/echo -n "Hit ENTER to continue: "
+read ANSWER
 
 check_rc() {
     SAVE_RC=$?
