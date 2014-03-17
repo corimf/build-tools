@@ -1,0 +1,124 @@
+#!/bin/sh -e
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+###############################################################################
+# Use the -e option so the script will fail on the first non-zero return code.
+
+# This is a script to catch up your local repos to the remote (corimf). It will
+# also push $BRANCH from local to corimf. It does not interact with the Apache
+# repos. For that, see corimf-catchup-apache.
+
+if [ "$1" = "" ]
+then
+    echo "Loading the settings from corimf-settings..."
+    source corimf-settings
+else
+    echo "Loading the settings from $1"
+    source "$1"
+fi
+
+echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
+echo "BRANCH=$BRANCH"
+echo "PREV_TAG=$PREV_TAG"
+echo "NEW_BRANCH=$NEW_BRANCH"
+
+/bin/echo -n "Hit ENTER to continue: "
+read ANSWER
+
+# Shouldn't need to change anything below here.
+
+check_rc() {
+    SAVE_RC=$?
+    if [ $SAVE_RC != 0 ]
+    then
+        echo "Failed."
+        exit $RC
+    else
+        echo "Success."
+    fi
+}
+
+trap check_rc EXIT
+
+echo "Checking that we are one dir above the git repo..."
+test -d $PLATFORM_REPO
+
+echo "Checking major version number..."
+MAJOR=`echo $BRANCH | cut -f1 -d.`
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+
+if [ "$MAJOR" -ge 3 ]
+then
+    echo "Checking that the plugin count is $PLUGIN_COUNT..."
+    COUNT=0
+    for PLUGIN in $PLUGINS
+    do
+        COUNT=`expr $COUNT + 1`
+    done
+    test "$COUNT" == "$PLUGIN_COUNT"
+else
+    echo "Skipping all plugins since version is $MAJOR"
+    PLUGINS=
+    PLUGMAN_REPO=
+fi
+
+echo "Checking that each repo exists..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    test -d $DIR
+done
+
+echo "Checking that $REMOTE_ORIGIN is a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git remote | grep $REMOTE_ORIGIN
+    popd
+done
+
+echo "Checking out the ESR branch $BRANCH for platforms and plugins and other..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git checkout $BRANCH
+    popd
+done
+
+echo "Doing a git pull and tags fetch on platform and plugins to make sure we are up-to-date..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git pull $REMOTE_ORIGIN $BRANCH
+    git fetch --tags $REMOTE_ORIGIN
+    popd
+done
+
+/bin/echo -n "Do you want to push you local repos to corimf? (y/n) [n]: "
+read ANSWER
+if [ "$ANSWER" = "y" ]
+then
+    for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+    do
+        pushd $DIR
+        git push $REMOTE_ORIGIN $BRANCH
+        git push --tags $REMOTE_ORIGIN
+        popd
+    done
+fi

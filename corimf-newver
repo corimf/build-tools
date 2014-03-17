@@ -1,0 +1,158 @@
+#!/bin/sh -e
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+###############################################################################
+# Use the -e option so the script will fail on the first non-zero return code.
+
+# This is a script to create a new ESR branch $BRANCH from the specified 
+# platform branch $BASE_BRANCH and from the latest production plugins and 
+# $OTHER_REPOS. It will also pull the latest content of $BASE_BRANCH from
+# $REMOTE_MASTER.
+
+if [ "$1" = "" ]
+then
+    echo "Loading the settings from corimf-settings..."
+    source corimf-settings
+else
+    echo "Loading the settings from $1"
+    source "$1"
+fi
+
+echo "MASTER_ORIGIN=$MASTER_ORIGIN"
+echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
+echo "BASE_BRANCH=$BASE_BRANCH"
+echo "BRANCH=$BRANCH"
+echo "NEW_TAG=$NEW_TAG"
+
+/bin/echo -n "Hit ENTER to continue: "
+read ANSWER
+
+# Shouldn't need to change anything below here.
+
+check_rc() {
+    SAVE_RC=$?
+    if [ $SAVE_RC != 0 ]
+    then
+        echo "Failed."
+        exit $RC
+    else
+        echo "Success."
+    fi
+}
+
+trap check_rc EXIT
+
+echo "Checking that we are one dir above the git repo..."
+test -d $PLATFORM_REPO
+
+echo "Checking major version number..."
+MAJOR=`echo $BRANCH | cut -f1 -d.`
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+
+if [ "$MAJOR" -ge 3 ]
+then
+    echo "Checking that the plugin count is $PLUGIN_COUNT..."
+    COUNT=0
+    for PLUGIN in $PLUGINS
+    do
+        COUNT=`expr $COUNT + 1`
+    done
+    test "$COUNT" == "$PLUGIN_COUNT"
+else
+    echo "Skipping all plugins since version is $MAJOR"
+    PLUGINS=
+    PLUGMAN_REPO=
+fi
+
+echo "Checking that each repo exists..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    test -d $DIR
+done
+
+echo "Checking that $REMOTE_ORIGIN is a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git remote | grep $REMOTE_ORIGIN
+    popd
+done
+
+echo "Checking that $MASTER_ORIGIN is a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git remote | grep $MASTER_ORIGIN
+    popd
+done
+
+echo "Checking out $BASE_BRANCH for platforms..."
+for DIR in $PLATFORM_REPOS
+do
+    pushd $DIR
+    git checkout $BASE_BRANCH || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/$BASE_BRANCH
+    git pull $MASTER_ORIGIN $BASE_BRANCH
+    git fetch --tags
+    # get this much current in $REMOTE_ORIGIN
+    git push $REMOTE_ORIGIN $BASE_BRANCH
+    git push --tags $REMOTE_ORIGIN
+    popd
+done
+echo "Checking out master for plugins and other..."
+# this does assume you want the latest release for the plugis and other
+for DIR in $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git checkout master || git checkout -b master $MASTER_ORIGIN/master
+    git pull $MASTER_ORIGIN master
+    git fetch --tags
+    # get this much current in $REMOTE_ORIGIN
+    git push $REMOTE_ORIGIN master
+    git push --tags $REMOTE_ORIGIN
+    popd
+done
+
+echo "Creating branch $BRANCH for platform repos..."
+# master for platforms and other, dev for plugins
+for DIR in $PLATFORM_REPOS
+do
+    pushd $DIR
+    echo "Checking out $BRANCH in $DIR..."
+    git checkout $BRANCH || git checkout -b $BRANCH $MASTER_ORIGIN/$BASE_BRANCH
+    echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
+    git push $REMOTE_ORIGIN $BRANCH
+    echo "Creating tag $NEW_TAG"
+    git tag $NEW_TAG
+    git push $REMOTE_ORIGIN $NEW_TAG
+    popd
+done
+echo "Creating branch $ESR for plugin and other repos..."
+for DIR in $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    echo "Checking out $BRANCH in $DIR..."
+    git checkout $BRANCH || git checkout -b $BRANCH $MASTER_ORIGIN/master
+    echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
+    git push $REMOTE_ORIGIN $BRANCH
+    echo "Creating tag $NEW_TAG"
+    git tag $NEW_TAG
+    git push $REMOTE_ORIGIN $NEW_TAG
+    popd
+done

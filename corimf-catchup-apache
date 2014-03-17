@@ -1,0 +1,171 @@
+#!/bin/sh -e
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+###############################################################################
+# Use the -e option so the script will fail on the first non-zero return code.
+
+# This is a script to catch up corimf to have the content from the Apache repos
+# for $BASE_BRANCH. $BASE_BRANCH is not expected to already exist locally or in
+# corimf, this will create it if necessary. Since $BRANCH typically is an ESR
+# branch (i.e., "3.1.0esr"), that won't exist in the Apache repos, so to avoid
+# playing with the variable of $BASE we'll use another variable named
+# $BASE_BRANCH. This script will not create any new IBM tags, it just propogates
+# tags that already exist in the Apache repos.
+
+if [ "$1" = "" ]
+then
+    echo "Loading the settings from corimf-settings..."
+    source corimf-settings
+else
+    echo "Loading the settings from $1"
+    source "$1"
+fi
+
+echo "MASTER_ORIGIN=$MASTER_ORIGIN"
+echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
+echo "BASE_BRANCH=$BASE_BRANCH"
+echo "PREV_TAG=$PREV_TAG"
+
+/bin/echo -n "Hit ENTER to continue: "
+read ANSWER
+
+# Shouldn't need to change anything below here.
+
+check_rc() {
+    SAVE_RC=$?
+    if [ $SAVE_RC != 0 ]
+    then
+        echo "Failed."
+        exit $RC
+    else
+        echo "Success."
+    fi
+}
+
+trap check_rc EXIT
+
+echo "Checking that we are one dir above the git repo..."
+test -d $PLATFORM_REPO
+
+echo "Checking major version number..."
+MAJOR=`echo $BASE_BRANCH | cut -f1 -d.`
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+
+if [ "$MAJOR" -ge 3 ]
+then
+    echo "Checking that the plugin count is $PLUGIN_COUNT..."
+    COUNT=0
+    for PLUGIN in $PLUGINS
+    do
+        COUNT=`expr $COUNT + 1`
+    done
+    test "$COUNT" == "$PLUGIN_COUNT"
+else
+    echo "Skipping all plugins since version is $MAJOR"
+    PLUGINS=
+    PLUGMAN_REPO=
+fi
+
+echo "Checking that each repo exists..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    test -d $DIR
+done
+
+echo "Checking that $REMOTE_ORIGIN is a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git remote | grep $REMOTE_ORIGIN
+    popd
+done
+
+echo "Checking that $MASTER_ORIGIN is a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git remote | grep $MASTER_ORIGIN
+    popd
+done
+
+echo "Syncing tags..."
+for DIR in $PLATFORM_REPOS $OTHER_REPOS $PLUGINS
+do
+    pushd $DIR
+    git fetch --tags $MASTER_ORIGIN
+    git push --tags $REMOTE_ORIGIN
+    popd
+done
+
+echo "Updating $BASE_BRANCH from $MASTER_ORIGIN to $REMOTE_ORIGIN..."
+if [ "$BASE_BRANCH" = "master" ]
+then
+    echo "Getting latest development branches..."
+    # think platform branch: master for platforms and other, dev for plugins
+    for DIR in $PLATFORM_REPOS $OTHER_REPOS
+    do
+        pushd $DIR
+        echo "Checking out $BASE_BRANCH in $DIR..."
+        git checkout $BASE_BRANCH || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/$BASE_BRANCH
+        echo "Catching up local $BASE_BRANCH from $MASTER_ORIGIN..."
+        git pull $MASTER_ORIGIN $BASE_BRANCH
+        echo "Catching up remote $BASE_BRANCH at $REMOTE_ORIGIN..."
+        git push $REMOTE_ORIGIN $BASE_BRANCH
+        popd
+    done
+    for DIR in $PLUGINS
+    do
+        pushd $DIR
+        echo "Checking out dev in $DIR..."
+        git checkout dev || git checkout -b dev $MASTER_ORIGIN/dev
+        echo "Catching up local dev from $MASTER_ORIGIN..."
+        git pull $MASTER_ORIGIN dev
+        echo "Catching up remote dev at $REMOTE_ORIGIN..."
+        git push $REMOTE_ORIGIN dev
+        popd
+    done
+else
+    echo "Getting branch $BASE_BRANCH for platform repos..."
+    # $BASE_BRANCHr for platforms, master for plugins and other
+    for DIR in $PLATFORM_REPOS
+    do
+        pushd $DIR
+        echo "Checking out $BASE_BRANCH in $DIR..."
+        git checkout $BASE_BRANCH || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/$BASE_BRANCH
+        echo "Catching up local $BASE_BRANCH from $MASTER_ORIGIN..."
+        git pull $MASTER_ORIGIN $BASE_BRANCH
+        echo "Catching up remote $BASE_BRANCH at $REMOTE_ORIGIN..."
+        git push $REMOTE_ORIGIN $BASE_BRANCH
+        popd
+    done
+    echo "Getting latest production branch for plugin and other repos..."
+    for DIR in $PLUGINS $OTHER_REPOS
+    do
+        pushd $DIR
+        echo "Checking out master in $DIR..."
+        git checkout master || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/master
+        echo "Catching up local master from $MASTER_ORIGIN..."
+        git pull $MASTER_ORIGIN master
+        echo "Catching up remote master at $REMOTE_ORIGIN..."
+        git push $REMOTE_ORIGIN master
+        popd
+    done
+fi
+
