@@ -1,0 +1,145 @@
+#!/bin/sh -e
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+###############################################################################
+# Use the -e option so the script will fail on the first non-zero return code.
+
+# This is a script to check the hash of local $BASE_BRANCH against the hash
+# of $RW_ORIGIN $BASE_BRANCH (not $REMOTE_ORIGIN). The purpose of this
+# is to make sure that the cron job that pulls from $RW_ORIGIN to
+# $REMOTE_ORIGIN is running, so when we pull from $REMOTE_ORIGIN it is
+# current. Because we need need a remote to $RW_ORIGIN to do that check
+# and we shouldn't be doing that when corimf is present, the $RW_ORIGIN
+# remote will be defined only for the duration of this script.
+
+if [ "$1" = "" ]
+then
+    echo "Loading the settings from corimf-settings..."
+    source corimf-settings
+else
+    echo "Loading the settings from $1"
+    source "$1"
+fi
+
+echo "RW_ORIGIN=$RW_ORIGIN"
+echo "BASE_BRANCH=$BASE_BRANCH"
+
+/bin/echo -n "Hit ENTER to continue: "
+read ANSWER
+
+# Shouldn't need to change anything below here.
+
+check_rc() {
+    SAVE_RC=$?
+    if [ $SAVE_RC != 0 ]
+    then
+        echo "Failed."
+        echo "Cleaning up..."
+        popd || true
+        for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+        do
+            pushd $DIR > /dev/null 2>&1
+            git remote | grep $RW_ORIGIN && git remote remove $RW_ORIGIN
+            popd > /dev/null 2>&1
+        done
+        exit $RC
+    else
+        echo "Success."
+    fi
+}
+
+trap check_rc EXIT
+
+echo "Checking that we are one dir above the git repo..."
+test -d $PLATFORM_REPO
+
+echo "Checking major version number..."
+MAJOR=`echo $BRANCH | cut -f1 -d.`
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+
+if [ "$MAJOR" -ge 3 ]
+then
+    echo "Checking that the plugin count is $PLUGIN_COUNT..."
+    COUNT=0
+    for PLUGIN in $PLUGINS
+    do
+        COUNT=`expr $COUNT + 1`
+    done
+    test "$COUNT" == "$PLUGIN_COUNT"
+else
+    echo "Skipping all plugins since version is $MAJOR"
+    PLUGINS=
+    PLUGMAN_REPO=
+fi
+
+echo "Checking that each repo exists..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    test -d $DIR
+done
+
+echo "Checking that $REMOTE_ORIGIN is a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git remote | grep $REMOTE_ORIGIN
+    popd
+done
+
+echo "Checking that $RW_ORIGIN is NOT a defined remote..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    test -z "`git remote | grep $RW_ORIGIN`"
+    popd
+done
+
+REPORT=
+echo "Doing the check for platforms..."
+for DIR in $PLATFORM_REPOS
+do
+    pushd $DIR
+    git remote add $RW_ORIGIN https://git-wip-us.apache.org/repos/asf/$DIR.git
+    EXPECTED=`git ls-remote --heads $RW_ORIGIN $BASE_BRANCH | cut -f1`
+    ACTUAL=`git rev-parse $BASE_BRANCH`
+    if [ "$ACTUAL" != "$EXPECTED" ]
+    then
+        REPORT="$REPORT\n$DIR: EXPECTED $EXPECTED ACTUAL $ACTUAL"
+    fi
+    git remote remove $RW_ORIGIN
+    popd
+done
+
+echo "Doing the check for plugins and other..."
+for DIR in $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git remote add $RW_ORIGIN https://git-wip-us.apache.org/repos/asf/$DIR.git
+    EXPECTED=`git ls-remote --heads $RW_ORIGIN master | cut -f1`
+    ACTUAL=`git rev-parse master`
+    if [ "$ACTUAL" != "$EXPECTED" ]
+    then
+        REPORT="$REPORT\n$DIR: EXPECTED $EXPECTED ACTUAL $ACTUAL"
+    fi
+    git remote remove $RW_ORIGIN
+    popd
+done
+echo "$REPORT"
+test -z "$REPORT"

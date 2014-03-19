@@ -1,0 +1,137 @@
+#!/bin/sh -e
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+###############################################################################
+# Use the -e option so the script will fail on the first non-zero return code.
+
+# This is a script to create a source snapshot of the specified $NEW_TAG.
+# It will not fetch from $REMOTE_ORIGIN or $MASTER_ORIGIN, it is expected
+# that the local repos are already up-to-date (via the other scripts here).
+
+if [ "$1" = "" ]
+then
+    echo "Loading the settings from corimf-settings..."
+    source corimf-settings
+else
+    echo "Loading the settings from $1"
+    source "$1"
+fi
+
+echo "NEW_TAG=$NEW_TAG"
+
+/bin/echo -n "Hit ENTER to continue: "
+read ANSWER
+
+# Shouldn't need to change anything below here.
+
+check_rc() {
+    SAVE_RC=$?
+    if [ $SAVE_RC != 0 ]
+    then
+        echo "Failed."
+        exit $RC
+    else
+        echo "Success."
+    fi
+}
+
+trap check_rc EXIT
+
+echo "Checking that we are one dir above the git repo..."
+test -d $PLATFORM_REPO
+
+echo "Checking that coho is present..."
+test -d cordova-coho
+test -f cordova-coho/coho
+test -x cordova-coho/coho
+
+echo "Checking major version number..."
+MAJOR=`echo $BRANCH | cut -f1 -d.`
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+
+if [ "$MAJOR" -ge 3 ]
+then
+    echo "Checking that the plugin count is $PLUGIN_COUNT..."
+    COUNT=0
+    for PLUGIN in $PLUGINS
+    do
+        COUNT=`expr $COUNT + 1`
+    done
+    test "$COUNT" == "$PLUGIN_COUNT"
+else
+    echo "Skipping all plugins since version is $MAJOR"
+    PLUGINS=
+    PLUGMAN_REPO=
+fi
+
+echo "Checking that each repo exists..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    test -d $DIR
+done
+
+echo "Checking that output directory $NEW_TAG does not already exist..."
+test ! -d $NEW_TAG
+
+echo "Computing short names..."
+PLATFORM_REPOS_SHORT=
+for DIR in $PLATFORM_REPOS
+do
+    PLATFORM_REPOS_SHORT="$PLATFORM_REPOS_SHORT -r `echo $DIR | cut -f2- -d-`"
+done
+
+PLUGINS_SHORT=
+for DIR in $PLUGINS
+do
+    PLUGINS_SHORT="$PLUGINS_SHORT -r `echo $DIR | cut -f2- -d-`"
+done
+
+OTHER_REPOS_SHORT=
+for DIR in $OTHER_REPOS
+do
+    # cordova-blackberry-plugins is not defined in coho
+    if [ $DIR = "cordova-blackberry-plugins" ]
+    then
+        continue
+    fi
+    OTHER_REPOS_SHORT="$OTHER_REPOS_SHORT -r `echo $DIR | cut -f2- -d-`"
+done
+
+echo "Invoking coho..."
+cordova-coho/coho create-archive --tag $NEW_TAG --sign false --dest $NEW_TAG $PLATFORM_REPOS_SHORT $PLUGINS_SHORT $OTHER_REPOS_SHORT
+
+echo "Getting cordova-blackberry-plugins..."
+SAVE_DIR=`pwd`
+# using similar command as what is in "coho create-archive"
+cd cordova-blackberry-plugins && git archive --format zip --prefix cordova-blackberry-plugins/ -o $SAVE_DIR/$NEW_TAG/cordova-blackberry-plugins-$NEW_TAG.zip $NEW_TAG plugin/com.blackberry.utils plugin/org.apache.cordova.blackberry10.pimlib
+cd ..
+
+echo "Creating reference to build instructions..."
+cat << EOM > $SAVE_DIR/$NEW_TAG/instructions.html
+<html>
+  <head>
+    <title>Reference to Instructions for Building Cordova Snapshot from Source</title>
+  </head>
+  <body>
+    <h1>Building Cordova Snapshot from Source</h1>
+    The instructions can be found <a href="https://w3-connections.ibm.com/wikis/home?lang=en-us#!/wiki/W9ae505f4bacb_461a_acbb_680b6ed21a7f/page/BlueWash%20Process">here</a>.
+  </body>
+</html>
+EOM

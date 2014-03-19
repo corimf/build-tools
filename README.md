@@ -13,5 +13,9 @@ When building a distribution for downstream consumption:
    than one person is contributing to a single fix.
 1. Run corimf-check to sanity check everything
 1. Run corimf-tag to create a new tag on the branch
+1. Run corimf-cron to verify that the cron job syncing git-wip-us.a.o with
+   github.com/apache is running well.
+1. Run corimf-snapshot to create a zip of each platform source.
 1. Run the platform build scripts
    - corimf-build-android
+
