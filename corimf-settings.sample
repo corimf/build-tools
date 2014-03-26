@@ -38,16 +38,16 @@ REMOTE_ORIGIN=corimf
 BRANCH=3.1.0esr
 
 # name of the new git tag for this new addition
-NEW_TAG=WL6100u4
+NEW_TAG=WL6100u3
 
 # name of the git tag which already exists immediately previous
-PREV_TAG=WL6100u3
+PREV_TAG=WL6100u2
 
 # when adding plugins to a platform, name of a plugin to skip
 # (i.e., "cordova-geolocation" for Android)
 SKIP_PLUGIN=
 
-# the "git remote -v" name for the Apache read-only repos
+# the "git remote -v" name for the Apache read-only repos on github.com
 # (i.e., https://github.com/apache/cordova-android.git for Android)
 MASTER_ORIGIN=readonly
 
@@ -58,7 +58,10 @@ MASTER_ORIGIN=readonly
 # plugins. Yes, this does kind of assume that $BASE_BRANCH is the latest
 # production branch for the platforms because it gets master for the plugins
 # and other.
-BASE_BRANCH=3.1.x
+BASE_BRANCH=3.4.x
+
+# the "git remote -v" name for the read-write Apache repos on git-wip-us.a.o.
+RW_ORIGIN=readwrite
 
 ##############################################################################
 # Shouldn't need to change anything below here.
