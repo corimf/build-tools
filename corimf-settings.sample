@@ -38,10 +38,10 @@ REMOTE_ORIGIN=corimf
 BRANCH=3.1.0esr
 
 # name of the new git tag for this new addition
-NEW_TAG=WL6100u3
+NEW_TAG=WL6100u4
 
 # name of the git tag which already exists immediately previous
-PREV_TAG=WL6100u2
+PREV_TAG=WL6100u3
 
 # when adding plugins to a platform, name of a plugin to skip
 # (i.e., "cordova-geolocation" for Android)

@@ -52,8 +52,12 @@ check_rc() {
     then
         echo "Failed."
         exit $RC
-    else
+    elif [ "$DONE" = 1 ]
+    then
         echo "Success."
+    else
+        echo "Incomplete."
+        exit 1
     fi
 }
 
@@ -238,3 +242,5 @@ exit 0
 # echo "Checking that each plugin is checked out at the correct tag"
 
 echo "All building complete."
+
+DONE=1

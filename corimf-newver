@@ -52,8 +52,12 @@ check_rc() {
     then
         echo "Failed."
         exit $RC
-    else
+    elif [ "$DONE" = 1 ]
+    then
         echo "Success."
+    else
+        echo "Incomplete."
+        exit 1
     fi
 }
 
@@ -156,3 +160,5 @@ do
     git push $REMOTE_ORIGIN $NEW_TAG
     popd
 done
+
+DONE=1

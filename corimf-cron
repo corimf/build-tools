@@ -48,7 +48,7 @@ read ANSWER
 
 check_rc() {
     SAVE_RC=$?
-    if [ $SAVE_RC != 0 ]
+    if [ $SAVE_RC != 0 -o "$DONE" != 1 ]
     then
         echo "Failed."
         echo "Cleaning up..."
@@ -143,3 +143,5 @@ do
 done
 echo "$REPORT"
 test -z "$REPORT"
+
+DONE=1

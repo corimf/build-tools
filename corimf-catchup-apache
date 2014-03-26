@@ -54,8 +54,12 @@ check_rc() {
     then
         echo "Failed."
         exit $RC
-    else
+    elif [ "$DONE" = 1 ]
+    then
         echo "Success."
+    else
+        echo "Incomplete."
+        exit 1
     fi
 }
 
@@ -169,3 +173,4 @@ else
     done
 fi
 
+DONE=1

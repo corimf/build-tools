@@ -48,8 +48,12 @@ check_rc() {
     then
         echo "Failed."
         exit $RC
-    else
+    elif [ "$DONE" = 1 ]
+    then
         echo "Success."
+    else
+        echo "Incomplete."
+        exit 1
     fi
 }
 
@@ -109,3 +113,5 @@ REMOTE=`git ls-remote --tags $REMOTE_ORIGIN $NEW_TAG | cut -f1`
 test "$LOCAL" = "$REMOTE"
 
 echo "All tests complete."
+
+DONE=1
