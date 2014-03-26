@@ -168,10 +168,10 @@ do
 Repository: $DIR
 
 Git Hashes: 
-    expected=$EXPECTED
-       local=$LOCAL
-    previous=$PREV
-      branch=$LOCAL_BRANCH
+      expected=$EXPECTED
+         local=$LOCAL
+  local branch=$LOCAL_BRANCH
+      previous=$PREV
 
 IBM Modifications:
 $MODIFICATIONS
