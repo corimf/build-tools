@@ -35,6 +35,7 @@ else
 fi
 
 echo "NEW_TAG=$NEW_TAG"
+echo "PREV_TAG=$PREV_TAG"
 
 /bin/echo -n "Hit ENTER to continue: "
 read ANSWER
@@ -47,8 +48,12 @@ check_rc() {
     then
         echo "Failed."
         exit $RC
-    else
+    elif [ "$DONE" = 1 ]
+    then
         echo "Success."
+    else
+        echo "Incomplete."
+        exit 1
     fi
 }
 
@@ -124,7 +129,7 @@ cd cordova-blackberry-plugins && git archive --format zip --prefix cordova-black
 cd ..
 
 echo "Creating reference to build instructions..."
-cat << EOM > $SAVE_DIR/$NEW_TAG/instructions.html
+cat << EOM > $SAVE_DIR/$NEW_TAG/IBM-INSTRUCTIONS.html
 <html>
   <head>
     <title>Reference to Instructions for Building Cordova Snapshot from Source</title>
@@ -135,3 +140,52 @@ cat << EOM > $SAVE_DIR/$NEW_TAG/instructions.html
   </body>
 </html>
 EOM
+
+echo "Storing hashes and release notes..."
+echo "corimf git hashes and release notes for $NEW_TAG (as compared to $PREV_TAG):" > $NEW_TAG/IBM-RELEASE-NOTES.txt
+SAVE_DIR=`pwd`
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    EXPECTED=`git rev-parse $NEW_TAG`
+    LOCAL=`git log -1 --pretty=oneline | cut -f1 -d' '`
+    PREV=`git rev-parse $PREV_TAG`
+    DIFF=`git diff --numstat $PREV_TAG $NEW_TAG`
+    if [ -f IBM-MODIFICATIONS.txt ]
+    then
+        MODIFICATIONS=`git diff $PREV_TAG $NEW_TAG IBM-MODIFICATIONS.txt`
+        MODIFICATIONS_STRIP=`echo "$MODIFICATIONS" | tr -d '\n' | tr -d '\r'`
+        if [ -z "$MODIFICATIONS_STRIP" ]
+        then
+            MODIFICATIONS='(no modifications listed manually)'
+        fi
+    else
+        MODIFICATIONS='(no manual definition file found)'
+    fi
+    LOCAL_BRANCH=`git status -b --porcelain | grep '^##' | cut -f2 -d' '`
+    cat << EOM >> $SAVE_DIR/$NEW_TAG/IBM-RELEASE-NOTES.txt
+
+Repository: $DIR
+
+Git Hashes: 
+    expected=$EXPECTED
+       local=$LOCAL
+    previous=$PREV
+      branch=$LOCAL_BRANCH
+
+IBM Modifications:
+$MODIFICATIONS
+
+Diff Stats (lines added/deleted/filename):
+$DIFF
+============================================================================
+EOM
+    unset EXPECTED
+    unset LOCAL
+    unset DIFF
+    unset MODIFICATIONS
+    unset LOCAL_BRANCH
+    popd
+done
+
+DONE=1
