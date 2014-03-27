@@ -1,4 +1,4 @@
-#!/bin/sh -ex
+#!/bin/sh -e
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -36,6 +36,7 @@ fi
 
 echo "NEW_TAG=$NEW_TAG"
 echo "PREV_TAG=$PREV_TAG"
+echo "BRANCH=$BRANCH"
 
 /bin/echo -n "Hit ENTER to continue: "
 read ANSWER

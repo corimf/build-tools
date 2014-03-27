@@ -40,6 +40,7 @@ fi
 
 echo "RW_ORIGIN=$RW_ORIGIN"
 echo "BASE_BRANCH=$BASE_BRANCH"
+echo "BRANCH=$BRANCH"
 
 /bin/echo -n "Hit ENTER to continue: "
 read ANSWER
