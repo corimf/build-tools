@@ -24,9 +24,7 @@
 
 var shelljs = require('shelljs'),
 	settings = require('./corimf-settings.js'),
-	tmp = require('temporary'),
-	fs = require('fs'),
-	crypto = require('crypto');
+	tmp = require('temporary');
 
 console.log('PLATFORM_REPO = ' + settings.PLATFORM_REPO);
 console.log('REMOTE_ORIGIN = ' + settings.REMOTE_ORIGIN);
