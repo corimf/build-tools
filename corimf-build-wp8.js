@@ -63,13 +63,12 @@ for (var i = 0; i < repos.length; i++) {
 	file2.unlink();
 }
 
-//tests.pullAndFetchTags(repos);
+tests.pullAndFetchTags(repos);
 
 console.log('Checking that the platform and plugins have the tag ' + settings.NEW_TAG + '...');
 for (var i = 0; i < repos.length; i++) {
 	console.log(repos[i] + ': ');
 	shelljs.cd(repos[i]);
-	//shelljs.exec('git fetch --tags', {silent:true});
 	tests.reportStatus(shelljs.exec('git rev-parse ' + settings.NEW_TAG, {silent:true}).code == 0);
 	shelljs.cd('..');
 }
@@ -136,9 +135,25 @@ tests.reportStatus(shelljs.exec('cp -r ' + PROJECT_DIR + '/www ' + SNAPSHOT_DIR,
 // get the dll from Bin/Release
 tests.reportStatus(shelljs.exec('cp ' + PROJECT_DIR + '/Bin/Release/com.example.dll ' + SNAPSHOT_DIR, {silent:true}).code == 0);
 
+// get the IBM-MODIFICATIONS.txt
+shelljs.mkdir(SNAPSHOT_DIR + '/modifications');
+for (var i = 0; i < repos.length; i++) {
+	if (shelljs.test('-f', repos[i] + '/IBM-MODIFICATIONS.txt')) {
+		tests.reportStatus(shelljs.exec('cp ' + repos[i] + '/IBM-MODIFICATIONS.txt ' + SNAPSHOT_DIR + '/modifications/' + repos[i] + '.IBM-MODIFICATIONS.txt'), {silent:true});
+	}
+}
+
+console.log('Checking cordova.js file for PhoneGap variable...');
+// the following line does not exist in the git repo, but must be included in the copy of
+// cordova.js given to WL. Produce a reminder if this line is not present.
+if (shelljs.grep('PhoneGap', SNAPSHOT_DIR + '/www/cordova.js').length == 0) {
+	console.log('*************************************************************');
+	console.log('NOTE: Please append the following line:');
+	console.log('var PhoneGap = cordova;');
+	console.log('to the cordova js file before uploading to gsa. Do not commit this change to the repo.');
+	console.log('*************************************************************');
+}
+
 console.log('All building complete.');
 // Note that the script does not yet zip the snapshot directory; this must be 
 // done manually for windows compatibility.
-
-
-
