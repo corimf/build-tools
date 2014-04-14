@@ -126,8 +126,20 @@ cordova-coho/coho create-archive --tag $NEW_TAG --sign false --dest $NEW_TAG $PL
 echo "Getting cordova-blackberry-plugins..."
 SAVE_DIR=`pwd`
 # using similar command as what is in "coho create-archive"
-cd cordova-blackberry-plugins && git archive --format zip --prefix cordova-blackberry-plugins/ -o $SAVE_DIR/$NEW_TAG/cordova-blackberry-plugins-$NEW_TAG.zip $NEW_TAG plugin/com.blackberry.utils plugin/org.apache.cordova.blackberry10.pimlib
-cd ..
+pushd cordova-blackberry-plugins
+# The name for pimlib changed between 3.1.0 and 3.4.0.
+if [ -d plugin/org.apache.cordova.blackberry10.pimlib ]
+then
+    echo "  Using old pimlib name."
+    PIMLIB="plugin/org.apache.cordova.blackberry10.pimlib"
+else
+    echo "  Using new pimlib name."
+    PIMLIB="plugin/com.blackberry.pim.lib"
+fi
+test -d plugin/com.blackberry.utils
+test -d $PIMLIB
+git archive --format zip --prefix cordova-blackberry-plugins/ -o $SAVE_DIR/$NEW_TAG/cordova-blackberry-plugins-$NEW_TAG.zip $NEW_TAG plugin/com.blackberry.utils $PIMLIB
+popd
 
 echo "Creating reference to build instructions..."
 cat << EOM > $SAVE_DIR/$NEW_TAG/IBM-INSTRUCTIONS.html
