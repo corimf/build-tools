@@ -138,7 +138,9 @@ else
 fi
 test -d plugin/com.blackberry.utils
 test -d $PIMLIB
-git archive --format zip --prefix cordova-blackberry-plugins/ -o $SAVE_DIR/$NEW_TAG/cordova-blackberry-plugins-$NEW_TAG.zip $NEW_TAG plugin/com.blackberry.utils $PIMLIB
+# we also need to get the pieces to compile from source. See the README.md
+# for instructions on how to compile.
+git archive --format zip --prefix cordova-blackberry-plugins/ -o $SAVE_DIR/$NEW_TAG/cordova-blackberry-plugins-$NEW_TAG.zip $NEW_TAG plugin/com.blackberry.utils $PIMLIB Jakefile LICENSE README.md package.json Makefile test scripts dependencies
 popd
 
 echo "Creating reference to build instructions..."
