@@ -113,9 +113,26 @@ echo "Tagging the end of $BRANCH for platforms and plugins and others..."
 for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
-    echo "Creating tag $NEW_TAG"
-    git tag $NEW_TAG
-    git push $REMOTE_ORIGIN $NEW_TAG
+    # check to see if the tag already exists
+    EXISTS=`git tag | grep "$NEW_TAG"` || true
+    if [ -z "$EXISTS" ]
+    then
+        echo "Creating tag $NEW_TAG"
+        git tag $NEW_TAG
+        git push $REMOTE_ORIGIN $NEW_TAG
+    else
+        # make sure the tag is at the end of the branch
+        EXPECTED=`git rev-parse $BRANCH`
+        ACTUAL=`git rev-parse $NEW_TAG`
+        if [ "$EXPECTED" = "$ACTUAL" ]
+        then
+            echo "Tag $NEW_TAG already exists for $DIR. Looks to be OK."
+        else
+            # fail with an error
+            echo "For $DIR tag $NEW_TAG already exists with $ACTUAL but is expected to to $EXPECTED"
+            false
+        fi
+    fi
     popd
 done
 
