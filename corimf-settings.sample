@@ -28,11 +28,11 @@
 # All the build scripts will read from this file, so not all variables will
 # be used in a single script, though other scripts here may use them.
 
+#############################################
+#### For updating a new platform release ####
+#############################################
 # process artifact for this platform
 PLATFORM_REPO=cordova-android
-
-# name of the git remote repository from "git remote -v"
-REMOTE_ORIGIN=corimf
 
 # name of the git branch that is being worked on (should end in "esr")
 BRANCH=3.1.0esr
@@ -47,9 +47,18 @@ PREV_TAG=WL6100u3
 # (i.e., "cordova-geolocation" for Android)
 SKIP_PLUGIN=
 
+##########################
+##### For all scripts ####
+##########################
+# name of the git remote repository from "git remote -v"
+REMOTE_ORIGIN=corimf
+
 # the "git remote -v" name for the Apache read-only repos on github.com
 # (i.e., https://github.com/apache/cordova-android.git for Android)
 MASTER_ORIGIN=github
+
+# the "git remote -v" name for the read-write Apache repos on git-wip-us.a.o.
+RW_ORIGIN=apache
 
 # this is a new branch to pull from $MASTER_ORIGIN. You are not expected
 # to have this already checked out, or for it to already exist locally.
@@ -59,9 +68,6 @@ MASTER_ORIGIN=github
 # production branch for the platforms because it gets master for the plugins
 # and other.
 BASE_BRANCH=3.4.x
-
-# the "git remote -v" name for the read-write Apache repos on git-wip-us.a.o.
-RW_ORIGIN=apache
 
 ##############################################################################
 # Shouldn't need to change anything below here.

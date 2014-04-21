@@ -83,6 +83,8 @@ else
     echo "Skipping all plugins since version is $MAJOR"
     PLUGINS=
     PLUGMAN_REPO=
+    PLATFORM_REPOS="cordova-android cordova-ios cordova-windows cordova-wp8 cordova-js"
+    OTHER_REPOS=
 fi
 
 echo "Checking that each repo exists..."

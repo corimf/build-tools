@@ -87,7 +87,7 @@ do
     then
         git remote remove $RW_ORIGIN
     fi
-    git remote add $REMOTE_ORIGIN https://github.com/corimf/$DIR.git
+    git remote add $REMOTE_ORIGIN https://github.com/corimf/$DIR
     git remote add $RW_ORIGIN https://git-wip-us.apache.org/repos/asf/$DIR.git
     popd
 done

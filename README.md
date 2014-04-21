@@ -12,7 +12,7 @@ When building a distribution for downstream consumption:
 1. Make your changes to the ESR branch, commit them and push them to corimf.
 1. Run corimf-catchup to get your local repos up-to-date from corimf, if more
    than one person is contributing to a single fix.
-1. Run corimf-check to sanity check everything
+1. Run corimf-check to sanity check everything.  This needs to be run in the git repo ( for example 'cordova-ios')
 1. Run corimf-tag to create a new tag on the branch
 1. Run corimf-cron to verify that the cron job syncing git-wip-us.a.o with
    github.com/apache is running well.
