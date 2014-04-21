@@ -4,6 +4,7 @@ build-tools
 When building a distribution for downstream consumption:
 
 1. Create your own corimf-settings from the sample provided.
+1. Optional: run corimf-setup for initial setup a new workspace with new repos.
 1. Run corimf-catchup-apache to get your local repos and corimf up-to-date
    with the content and tags from the Apache repos.
 1. Run corimf-newver to create a new ESR branch from an existing Apache branch
