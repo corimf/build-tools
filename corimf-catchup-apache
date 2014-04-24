@@ -41,7 +41,6 @@ fi
 echo "MASTER_ORIGIN=$MASTER_ORIGIN"
 echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
 echo "BASE_BRANCH=$BASE_BRANCH"
-echo "PREV_TAG=$PREV_TAG"
 
 /bin/echo -n "Hit ENTER to continue: "
 read ANSWER
@@ -70,7 +69,13 @@ test -d $PLATFORM_REPO
 
 echo "Checking major version number..."
 MAJOR=`echo $BASE_BRANCH | cut -f1 -d.`
-test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+echo "MAJOR = $MAJOR"
+if [ "$MAJOR" = "master" ]
+then
+    MAJOR=3
+else
+    test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+fi
 
 if [ "$MAJOR" -ge 3 ]
 then
@@ -106,6 +111,15 @@ for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
     git remote | grep $MASTER_ORIGIN
+    popd
+done
+
+echo "Checking that each repo has no outstanding changes..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    OUTPUT=`git status --porcelain`
+    test -z "$OUTPUT"
     popd
 done
 
@@ -147,7 +161,7 @@ then
     done
 else
     echo "Getting branch $BASE_BRANCH for platform repos..."
-    # $BASE_BRANCHr for platforms, master for plugins and other
+    # $BASE_BRANCH for platforms, master for plugins and other
     for DIR in $PLATFORM_REPOS
     do
         pushd $DIR
