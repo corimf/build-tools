@@ -105,6 +105,14 @@ do
     popd
 done
 
+echo "Verifying that checkout succeeded..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git status --branch --porcelain | grep "^## $BRANCH\$"
+    popd
+done
+
 echo "Doing a git pull and tags fetch on platform and plugins to make sure we are up-to-date..."
 for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
@@ -114,7 +122,7 @@ do
     popd
 done
 
-/bin/echo -n "Do you want to push you local repos to corimf? (y/n) [n]: "
+/bin/echo -n "Do you want to push your local repos to corimf? (y/n) [n]: "
 read ANSWER
 if [ "$ANSWER" = "y" ]
 then
