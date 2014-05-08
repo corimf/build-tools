@@ -107,7 +107,7 @@ echo "Verifying that checkout succeeded..."
 for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
-    git status --branch --porcelain | grep "^## $BRANCH\$"
+    git status --branch --porcelain | grep "^## $BRANCH"
     popd
 done
 
