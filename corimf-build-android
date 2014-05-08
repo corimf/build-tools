@@ -24,7 +24,9 @@
 # This is a script to automate building a 2.3.0 thru 3.1.0 snapshot of Android
 # Cordova for delivery to a product team to integrate. The manual process for
 # this is described in our wiki. It is assumed that the platform/plugman/plugin
-# repos have already been tagged with NEW_TAG.
+# repos have already been tagged with NEW_TAG. If you are just doing a test
+# build and not creating a snapshot for product integration, you can get around
+# the NEW_TAG check by setting it to "HEAD" in your corimf-settings file.
 
 if [ "$1" = "" ]
 then
@@ -204,6 +206,13 @@ do
     node $PLUGMAN_REPO/main.js --debug install -platform android -project $PROJECT_DIR --plugin ./$PLUGIN
 done
 
+echo "Building the project (apk)..."
+cd $PROJECT_DIR
+ant debug
+# capture the plugins in a jar for Worklight as a convenience
+jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova
+cd ..
+
 echo "Creating snapshot content in $SNAPSHOT_DIR..."
 mkdir $SNAPSHOT_DIR
 
@@ -236,10 +245,8 @@ find $SNAPSHOT_DIR -name .DS_Store -delete
 echo "Zipping snapshot content as $SNAPSHOT_DIR.zip..."
 zip -r $SNAPSHOT_DIR.zip $SNAPSHOT_DIR
 
-exit 0
-
-# echo "Checking that each plugin repo is present..."
-# echo "Checking that each plugin is checked out at the correct tag"
+# TODO: echo "Checking that each plugin repo is present..."
+# TODO: echo "Checking that each plugin is checked out at the correct tag"
 
 echo "All building complete."
 
