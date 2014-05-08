@@ -36,8 +36,6 @@ fi
 
 echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
 echo "BRANCH=$BRANCH"
-echo "PREV_TAG=$PREV_TAG"
-echo "NEW_BRANCH=$NEW_BRANCH"
 
 /bin/echo -n "Hit ENTER to continue: "
 read ANSWER
