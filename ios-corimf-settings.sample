@@ -38,10 +38,10 @@ PLATFORM_REPO=cordova-ios
 BRANCH=3.4.0esr
 
 # name of the new git tag for this new addition
-NEW_TAG=WL6200rc4
+NEW_TAG=WL6200u2
 
 # name of the git tag which already exists immediately previous
-PREV_TAG=WL6200rc3
+PREV_TAG=WL6200u1
 
 # when adding plugins to a platform, name of a plugin to skip
 # (i.e., "cordova-geolocation" for Android)
