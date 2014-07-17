@@ -56,30 +56,49 @@ check_rc() {
 
 trap check_rc EXIT
 
-TEMPFILENAME=$(mktemp tmp-showver-XXXXXX)
-test ! -z "$TEMPFILENAME"
+TEMPFILE=$(mktemp tmp-showver-XXXXXX)
+test ! -z "$TEMPFILE"
+TEMPDIR=$(mktemp -d tmp-showver-XXXXXX)
+test ! -z "$TEMPDIR"
 
 echo "Displaying plugin versions (from plugin.xml) from repo at $NEW_TAG:"
 
 for DIR in $PLUGINS
 do
-    /bin/echo -n "$DIR: "
-    test -d $DIR
-    cd $DIR
-    # check that tag exists, or else the whole script stops
-    EXISTS=`git tag | grep "$NEW_TAG"` || true
-    if [ -z "$EXISTS" ]
+    if [ -d $DIR ]
     then
-        echo "WARNING: No tag $NEW_TAG for $DIR"
-        continue
-    fi
-    git show $NEW_TAG:plugin.xml > $TEMPFILENAME
-    xmllint --shell $TEMPFILENAME << EOD | grep content | cut -f2 -d=
+        /bin/echo -n "$DIR: "
+        test -d $DIR
+        cd $DIR
+        # check that tag exists, or else the whole script stops
+        EXISTS=`git tag | grep "$NEW_TAG"` || true
+        if [ -z "$EXISTS" ]
+        then
+            echo "WARNING: No tag $NEW_TAG for $DIR"
+            continue
+        fi
+        git show $NEW_TAG:plugin.xml > $TEMPFILE
+        xmllint --shell $TEMPFILE << EOD | grep content | cut -f2 -d=
 setns defns=http://apache.org/cordova/ns/plugins/1.0
 xpath /defns:plugin/@version
 EOD
-    rm $TEMPFILENAME
-    cd ..
+        rm $TEMPFILE
+        cd ..
+    else
+        # it is a zip file of the pre-packaged source
+        ZIPFILE=$DIR-$NEW_TAG.zip
+        /bin/echo -n "zip file $ZIPFILE: "
+        test -f $ZIPFILE
+        unzip -q $ZIPFILE $DIR/plugin.xml -d $TEMPDIR
+        xmllint --shell $TEMPDIR/$DIR/plugin.xml << EOD | grep content | cut -f2 -d=
+setns defns=http://apache.org/cordova/ns/plugins/1.0
+xpath /defns:plugin/@version
+EOD
+        rm $TEMPDIR/$DIR/plugin.xml
+    fi
 done
+
+rm $TEMPFILE
+rm -rf $TEMPDIR
 
 DONE=1
