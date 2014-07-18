@@ -113,7 +113,7 @@ do
     pushd $DIR
     git checkout $BASE_BRANCH || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/$BASE_BRANCH
     git pull $MASTER_ORIGIN $BASE_BRANCH
-    git fetch --tags
+    git fetch --tags $MASTER_ORIGIN
     # get this much current in $REMOTE_ORIGIN
     git push $REMOTE_ORIGIN $BASE_BRANCH
     git push --tags $REMOTE_ORIGIN
@@ -126,7 +126,7 @@ do
     pushd $DIR
     git checkout master || git checkout -b master $MASTER_ORIGIN/master
     git pull $MASTER_ORIGIN master
-    git fetch --tags
+    git fetch --tags $MASTER_ORIGIN
     # get this much current in $REMOTE_ORIGIN
     git push $REMOTE_ORIGIN master
     git push --tags $REMOTE_ORIGIN

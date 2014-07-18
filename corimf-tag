@@ -107,7 +107,7 @@ do
     pushd $DIR
     git checkout $BRANCH || git checkout -b $BRANCH $REMOTE_ORIGIN/$BRANCH
     git pull $REMOTE_ORIGIN $BRANCH
-    git fetch --tags
+    git fetch --tags $REMOTE_ORIGIN
     popd
 done
 
