@@ -20,6 +20,8 @@ Note: [all] works on all releases
 1. Run corimf-cron to verify that the cron job syncing git-wip-us.a.o with
    github.com/apache is running well.
 1. Run corimf-snapshot to create a zip of each platform source.
+   - Make sure the file IBM-RELEASE-NOTES.txt is populated and shows the
+     files that have changed since the previous drop.
 1. Run the platform build scripts
    - corimf-build-android
 
