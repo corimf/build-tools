@@ -1,0 +1,22 @@
+{
+	"3.4.0esr": {
+		"cordova-plugin-battery-status": "r0.2.7",
+		"cordova-plugin-camera": "r0.2.7",
+		"cordova-plugin-console": "r0.2.7",
+		"cordova-plugin-contacts": "r0.2.8",
+		"cordova-plugin-device": "r0.2.8",
+		"cordova-plugin-device-motion": "r0.2.6",
+		"cordova-plugin-device-orientation": "r0.3.5",
+		"cordova-plugin-dialogs": "r0.2.6",
+		"cordova-plugin-file": "r1.0.0",
+		"cordova-plugin-file-transfer": "r0.4.1",
+		"cordova-plugin-geolocation": "r0.3.6",
+		"cordova-plugin-globalization": "r0.2.6",
+		"cordova-plugin-inappbrowser": "r0.3.1",
+		"cordova-plugin-media": "r0.2.8",
+		"cordova-plugin-media-capture": "r0.2.7",
+		"cordova-plugin-network-information": "r0.2.7",
+		"cordova-plugin-splashscreen": "r0.2.7",
+		"cordova-plugin-vibration": "r0.3.7"
+	}
+}
