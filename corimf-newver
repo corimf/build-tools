@@ -147,8 +147,24 @@ do
     git push $REMOTE_ORIGIN $NEW_TAG
     popd
 done
-echo "Creating branch $ESR for plugin and other repos..."
-for DIR in $PLUGINS $OTHER_REPOS
+echo "Creating branch $BRANCH for plugin repos..."
+for DIR in $PLUGINS
+do
+    #get corresponding plugin tag from json file, -A18 for 18 values in json object
+    PLUGIN_TAG=`grep -A18 $BRANCH build-tools/config.json | grep "\"$DIR\":" | cut -d "\"" -f 4`
+    pushd $DIR
+    echo "Checking out $BRANCH in $DIR..."
+    git fetch $REMOTE_ORIGIN
+    git checkout $BRANCH || git checkout -b $BRANCH $PLUGIN_TAG
+    echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
+    git push $REMOTE_ORIGIN $BRANCH
+    echo "Creating tag $NEW_TAG"
+    git tag $NEW_TAG
+    git push $REMOTE_ORIGIN $NEW_TAG
+    popd
+done
+echo "Creating branch $BRANCH for other repos..."
+for DIR in $OTHER_REPOS
 do
     pushd $DIR
     echo "Checking out $BRANCH in $DIR..."
