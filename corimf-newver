@@ -150,8 +150,9 @@ done
 echo "Creating branch $BRANCH for plugin repos..."
 for DIR in $PLUGINS
 do
-    #get corresponding plugin tag from json file, -A18 for 18 values in json object
-    PLUGIN_TAG=`grep -A18 $BRANCH build-tools/config.json | grep "\"$DIR\":" | cut -d "\"" -f 4`
+    #get corresponding plugin tag from json file
+    PLUGIN_TAG=`node build-tools/get_repo_ver.js $BRANCH $DIR`
+    echo "Plugin tag = $PLUGIN_TAG"
     pushd $DIR
     echo "Checking out $BRANCH in $DIR..."
     git fetch $REMOTE_ORIGIN
