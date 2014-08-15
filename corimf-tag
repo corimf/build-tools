@@ -26,7 +26,7 @@
 # to automate the tagging of the rest of them. This script assumes that
 # all the repos have the fix checked in, and are in the desired state
 # (because you would already be in the desired state immediately after 
-# testing your fix). 
+# testing your fix). It will do a "git checkout" of the specified branch.
 
 if [ "$1" = "" ]
 then
@@ -83,7 +83,7 @@ else
     echo "Skipping all plugins since version is $MAJOR"
     PLUGINS=
     PLUGMAN_REPO=
-    PLATFORM_REPOS="cordova-android cordova-ios cordova-windows cordova-wp8 cordova-js"
+    PLATFORM_REPOS="cordova-android cordova-ios cordova-windows cordova-wp8 cordova-blackberry cordova-js"
     OTHER_REPOS=
 fi
 

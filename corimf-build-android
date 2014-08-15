@@ -107,7 +107,7 @@ for DIR in $PLATFORM_REPO $PLUGMAN_REPO $PLUGINS
 do
     /bin/echo -n "$DIR: "
     cd $DIR
-    git status --porcelain -b | grep '^##' | grep "$BRANCH\$"
+    git status --porcelain -b | grep '^##' | grep "## $BRANCH"
     cd ..
 done
 
@@ -158,11 +158,18 @@ then
         echo "Sorry, you need to uninstall the SDK for API $API_LEVEL"
         echo "  or temporarily disable it by moving it to another directory, because it is"
         echo "  preventing API 17 from being the most recent API installed."
-        echo '  (i.e., move $SDK_HOME/sdk/platforms/android-18 $SDK_HOME/sdk/disabled-platforms/android-18 and make sure you have "Android SDK Build Tools" for v17 installed.'
+        echo "  This is a requirement for older Cordova versions."
+        echo "  (i.e., \"mv \$SDK_HOME/sdk/platforms/android-$API_LEVEL \$SDK_HOME/sdk/disabled-platforms/android-$API_LEVEL\" and make sure you have \"Android SDK Build Tools\" for v17 installed."
         exit 1
     fi
 fi 
 
+if [ $MAJOR -eq 2 ]
+then
+    # you need to mkdir cordova-android/framework/libs and add commons-codec.jar
+    test -d cordova-android/framework/libs
+    test -f cordova-android/framework/libs/commons-codec-1.7.jar
+fi
 echo "Rebuilding the cordova.jar..."
 cd cordova-android
 cd framework
@@ -208,9 +215,12 @@ done
 
 echo "Building the project (apk)..."
 cd $PROJECT_DIR
-ant debug
-# capture the plugins in a jar for Worklight as a convenience
-jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova
+cordova/build
+if [ $MAJOR -ge 3 ]
+then
+    # capture the plugins in a jar for Worklight as a convenience for 3.x
+    jar cvf cordova_plugins.jar -C ant-build/classes org/apache/cordova
+fi
 cd ..
 
 echo "Creating snapshot content in $SNAPSHOT_DIR..."

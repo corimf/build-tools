@@ -34,6 +34,9 @@ fi
 
 echo "Running this script will create all the necessary repos for the corimf scripts"
 
+echo "REMOTE_ORIGIN=$REMOTE_ORIGIN"
+echo "RW_ORIGIN=$RW_ORIGIN"
+
 /bin/echo -n "Hit ENTER to continue: "
 read ANSWER
 
