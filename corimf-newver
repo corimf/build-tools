@@ -152,16 +152,28 @@ for DIR in $PLUGINS
 do
     #get corresponding plugin tag from json file
     PLUGIN_TAG=`node build-tools/get_repo_ver.js $BRANCH $DIR`
-    echo "Plugin tag = $PLUGIN_TAG"
+    if [ $? != 0 ]
+    then
+        echo "Could not get plugin tag for $DIR from config.json file. Error: $PLUGIN_TAG"
+        continue
+    else
+        echo "Got plugin tag: $PLUGIN_TAG"
+    fi
+
     pushd $DIR
-    echo "Checking out $BRANCH in $DIR..."
     git fetch $REMOTE_ORIGIN
-    git checkout $BRANCH || git checkout -b $BRANCH $PLUGIN_TAG
-    echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
-    git push $REMOTE_ORIGIN $BRANCH
-    echo "Creating tag $NEW_TAG"
-    git tag $NEW_TAG
-    git push $REMOTE_ORIGIN $NEW_TAG
+    if [ `git tag --list $PLUGIN_TAG` ]
+    then
+        echo "Checking out $BRANCH in $DIR..."
+        git checkout $BRANCH || git checkout -b $BRANCH $PLUGIN_TAG
+        echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
+        git push $REMOTE_ORIGIN $BRANCH
+        echo "Creating tag $NEW_TAG"
+        git tag $NEW_TAG
+        git push $REMOTE_ORIGIN $NEW_TAG
+    else
+        echo "Plugin tag: $PLUGIN_TAG does not exist. Could not create $BRANCH for $DIR"
+    fi
     popd
 done
 echo "Creating branch $BRANCH for other repos..."
