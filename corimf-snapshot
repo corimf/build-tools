@@ -24,6 +24,8 @@
 # This is a script to create a source snapshot of the specified $NEW_TAG.
 # It will not fetch from $REMOTE_ORIGIN or $MASTER_ORIGIN, it is expected
 # that the local repos are already up-to-date (via the other scripts here).
+# You may need to have cordova-coho checked out at the WL6200 tag for this
+# script to work.
 
 if [ "$1" = "" ]
 then
@@ -85,6 +87,9 @@ else
     echo "Skipping all plugins since version is $MAJOR"
     PLUGINS=
     PLUGMAN_REPO=
+    # strip cordova-cli and cordova-plugman and cordova-blackberry-plugins from OTHER_REPOS when 2.x
+    OTHER_REPOS=`echo $OTHER_REPOS | sed -e 's/cordova-cli//' | sed -e 's/cordova-plugman//' | sed -e 's/cordova-blackberry-plugins//'`
+
 fi
 
 echo "Checking that each repo exists..."
@@ -132,15 +137,28 @@ if [ -d plugin/org.apache.cordova.blackberry10.pimlib ]
 then
     echo "  Using old pimlib name."
     PIMLIB="plugin/org.apache.cordova.blackberry10.pimlib"
-else
+elif [ -d plugin/com.blackberry.pim.lib ]
+then
     echo "  Using new pimlib name."
     PIMLIB="plugin/com.blackberry.pim.lib"
+elif [ $MAJOR -eq 2 ]
+then
+    # hmm, I don't think this is needed for 2.x
+    echo "Skipping BlackBerry plugin for Cordova 2.x"
+else
+    # something is wrong
+    echo "Can't find BlackBerry plugin."
+    exit 1
 fi
-test -d plugin/com.blackberry.utils
-test -d $PIMLIB
-# we also need to get the pieces to compile from source. See the README.md
-# for instructions on how to compile.
-git archive --format zip --prefix cordova-blackberry-plugins/ -o $SAVE_DIR/$NEW_TAG/cordova-blackberry-plugins-$NEW_TAG.zip $NEW_TAG plugin/com.blackberry.utils $PIMLIB Jakefile LICENSE README.md package.json Makefile test scripts dependencies plugin/Makefile plugin/meta.mk
+
+if [ $MAJOR -ge 3 ]
+then
+    test -d plugin/com.blackberry.utils
+    test -d $PIMLIB
+    # we also need to get the pieces to compile from source. See the README.md
+    # for instructions on how to compile.
+    git archive --format zip --prefix cordova-blackberry-plugins/ -o $SAVE_DIR/$NEW_TAG/cordova-blackberry-plugins-$NEW_TAG.zip $NEW_TAG plugin/com.blackberry.utils $PIMLIB Jakefile LICENSE README.md package.json Makefile test scripts dependencies plugin/Makefile plugin/meta.mk
+fi
 popd
 
 echo "Creating reference to build instructions..."

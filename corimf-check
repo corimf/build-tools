@@ -63,10 +63,10 @@ echo "Checking that this is being run in a git repo..."
 git status --porcelain
 
 echo "Checking that we are on an ESR branch..."
-git status --porcelain -b | grep '^##' | grep 'esr$'
+git status --porcelain -b | grep '^##' | grep 'esr'
 
 echo "Checking that we are on the expected ESR branch $BRANCH..."
-git status --porcelain -b | grep '^##' | grep "$BRANCH\$"
+git status --porcelain -b | grep '^##' | grep "## $BRANCH"
 
 echo "Doing a pull from $REMOTE_ORIGIN to make sure we are up-to-date..."
 git pull $REMOTE_ORIGIN $BRANCH
@@ -90,7 +90,7 @@ RESULT=`git log --format=oneline $PREV_TAG.. IBM-MODIFICATIONS.txt | wc -l`
 test "$RESULT" -gt 0
 
 echo "Checking that the new tag ends in uNUM..."
-echo $NEW_TAG | grep 'rc[0-9]\{1,\}$'
+echo $NEW_TAG | grep 'u[0-9]\{1,\}$'
 
 echo "Checking that the new tag is present in the local repo..."
 git rev-parse --verify $NEW_TAG
@@ -102,6 +102,9 @@ test -z "$RESULT"
 echo "Checking that the local commits are in the remote repo..."
 RESULT=`git diff --shortstat $REMOTE_ORIGIN/$BRANCH`
 test -z "$RESULT"
+HASH_LOCAL=`git rev-parse $BRANCH`
+HASH_REMOTE=`git ls-remote --heads $REMOTE_ORIGIN $BRANCH | cut -f1`
+test "$HASH_LOCAL" = "$HASH_REMOTE"
 
 echo "Checking that the local tag is in the remote repo..."
 RESULT=`git ls-remote --tags $REMOTE_ORIGIN $NEW_TAG`
