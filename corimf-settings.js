@@ -1,0 +1,84 @@
+/* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*  http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied.  See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
+
+/**********************************************************************************
+* This is a sample file. The active file should be renamed 'corimf-settings.js'.
+* The purpose of this file is to externalize the runtime settings from the scripts
+* themselves, and to not require manually-entered parameters. Feel free to change
+* the values below, but don't change the variable names. All the build scripts will
+* read from this file, so not all variables will be used in a single script, though
+* other scripts here may use them. This file is to be used for the node.js scripts.
+*/
+// process artifact for this platform
+var PLATFORM_REPO = 'cordova-android',
+
+	// set to false if you want to build entire deliverable for India team, true for just default ESR project
+	PROJECT_ONLY = false,
+	// name of the git remote repository from "git remote -v", should be from corimf if ESR is desired
+	REMOTE_ORIGIN = 'origin',
+
+	// name of the git branch that is being worked on (should end in "esr")
+	BRANCH = '3.1.0esr',
+
+	// name of the new git tag for this new addition
+	NEW_TAG = 'WL6100u9',
+
+	// name of the git tag which already exists immediately previous
+	PREV_TAG = 'WL6100u9',
+
+	// when adding plugins to a platform, name of a plugin to skip (i.e., "cordova-geolocation" for Android)
+	SKIP_PLUGIN = [],
+
+	// the "git remote -v" name for the Apache read-only repos on github.com
+	MASTER_ORIGIN = 'origin',
+
+	// this is a new branch to pull from MASTER_ORIGIN. You are not expected
+	// to have this already checked out, or for it to already exist locally.
+	// Should be in the form "3.4.x" or "master". Using "master" will get you
+	// the latest development branches: master for platforms and other, dev for
+	// plugins. Yes, this does kind of assume that $BASE_BRANCH is the latest
+	// production branch for the platforms because it gets master for the plugins
+	// and other.
+	BASE_BRANCH = '3.1.x',
+
+	// the "git remote -v" name for the read-write Apache repos on git-wip-us.a.o.
+	RW_ORIGIN = 'readwrite',
+
+	PLUGMAN_REPO = 'cordova-plugman',
+
+	PLUGIN_COUNT = 18,
+
+	PLUGINS = ['cordova-plugin-battery-status', 'cordova-plugin-camera', 'cordova-plugin-console', 'cordova-plugin-contacts', 'cordova-plugin-device', 'cordova-plugin-device-motion', 'cordova-plugin-device-orientation', 'cordova-plugin-dialogs', 'cordova-plugin-file', 'cordova-plugin-file-transfer', 'cordova-plugin-geolocation', 'cordova-plugin-globalization', 'cordova-plugin-inappbrowser', 'cordova-plugin-media', 'cordova-plugin-media-capture', 'cordova-plugin-network-information', 'cordova-plugin-splashscreen', 'cordova-plugin-vibration'];
+	PLATFORM_REPOS = ['cordova-android', 'cordova-blackberry', 'cordova-ios', 'cordova-windows', 'cordova-wp8', 'cordova-js'];
+	OTHER_REPOS = ['cordova-blackberry-plugins', 'cordova-cli', 'cordova-plugman'];
+
+exports.PLATFORM_REPO = PLATFORM_REPO;
+exports.PROJECT_ONLY = PROJECT_ONLY;
+exports.REMOTE_ORIGIN = REMOTE_ORIGIN;
+exports.BRANCH = BRANCH;
+exports.NEW_TAG = NEW_TAG;
+exports.PREV_TAG = PREV_TAG;
+exports.SKIP_PLUGIN = SKIP_PLUGIN;
+exports.MASTER_ORIGIN = MASTER_ORIGIN;
+exports.BASE_BRANCH = BASE_BRANCH;
+exports.RW_ORIGIN = RW_ORIGIN;
+exports.PLUGMAN_REPO = PLUGMAN_REPO;
+exports.PLUGIN_COUNT = PLUGIN_COUNT;
+exports.PLUGINS = PLUGINS;
+exports.PLATFORM_REPOS = exports.PLATFORM_REPOS;
+exports.OTHER_REPOS = OTHER_REPOS;

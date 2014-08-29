@@ -1,0 +1,14 @@
+{ "name": "createESRDeliverable",
+  "version": "1.0.0",
+  "description": "Creates Cordova empty project with all plugins integrated ready to build, and run",
+  "license": "Apache-2.0",
+  "main": "./createESRDeliverable",
+  "bin": {"createESRVersion": "./createESRDeliverable" },
+  "repository": {
+     "type": "git",
+     "url": ""},
+  "dependencies": {
+    "shelljs": "0.2.6",
+    "temporary": "0.0.8"},
+  "private": true
+}

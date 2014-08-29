@@ -16,7 +16,7 @@
 * under the License.
 *
 ********************************************************************************
-* This is a script to hold otherwise duplicated code for various tests 
+* This is a script to hold otherwise duplicated code for various tests
 * used in the build scripts.
 */
 
@@ -26,10 +26,12 @@ var shelljs = require('shelljs'),
 
 var tmpFile;
 
-function reportStatus(testStatus) {
+function reportStatus(testStatus, errMessage) {
 	if(testStatus == 0) {
-		console.log("ERROR");
-		
+		console.log("ERROR\n");
+		if(errMessage != undefined)
+			console.log(errMessage);
+
 		if(tmpFile) {
 			tmpFile.unlink();
 		}
@@ -69,12 +71,12 @@ function checkRemoteExists(repos, remoteName) {
 	var tmpFile;
 	for (var i = 0; i < repos.length; i++) {
 		shelljs.cd(repos[i]);
-		
+
 		tmpFile = new tmp.File();
 		tmpFile.writeFileSync(shelljs.exec('git remote', {silent:true}).output);
 		reportStatus(shelljs.grep(remoteName, tmpFile.path).length > 0);
 		tmpFile.unlink();
-		
+
 		shelljs.cd('..');
 	}
 }
@@ -83,8 +85,8 @@ function pullAndFetchTags(repos) {
 	console.log('Syncing tags...');
 	for (var i = 0; i < repos.length; i++) {
 		shelljs.cd(repos[i]);
-		shelljs.exec('git fetch --tags ' + settings.MASTER_ORIGIN, {silent:true});
-		shelljs.exec('git push --tags ' + settings.REMOTE_ORIGIN, {silent:true});
+		reportStatus(shelljs.exec('git fetch --tags ' + settings.MASTER_ORIGIN, {silent:true}).code == 0);
+		reportStatus(shelljs.exec('git push --tags ' + settings.REMOTE_ORIGIN, {silent:true}).code == 0);
 		shelljs.cd('..');
 	}
 }
@@ -94,10 +96,10 @@ function catchUp(repos, checkoutBranch) {
 		shelljs.cd(repos[i]);
 		console.log('Checking out ' + checkoutBranch + ' in ' + repos[i] + '...');
 		reportStatus(shelljs.exec('git checkout ' + checkoutBranch + ' || git checkout -b ' + checkoutBranch + ' ' + settings.MASTER_ORIGIN + '/' + checkoutBranch, {silent:true}).code == 0);
-		
+
 		console.log('Catching up local ' + checkoutBranch + ' from ' + settings.MASTER_ORIGIN + '...');
 		reportStatus(shelljs.exec('git pull ' + settings.MASTER_ORIGIN + ' ' + checkoutBranch, {silent:true}).code == 0);
-		
+
 		console.log('Catching up remote ' + checkoutBranch + ' at ' + settings.REMOTE_ORIGIN + '...');
 		reportStatus(shelljs.exec('git push ' + settings.REMOTE_ORIGIN + ' ' + checkoutBranch, {silent:true}).code == 0);
 		shelljs.cd('..');
