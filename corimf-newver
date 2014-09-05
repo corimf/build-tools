@@ -152,9 +152,9 @@ for DIR in $PLUGINS
 do
     #get corresponding plugin tag from json file
     PLUGIN_TAG=`node build-tools/get_repo_ver.js $BRANCH $DIR`
-    if [ $? != 0 ]
+    if [ -z "$PLUGIN_TAG" ]
     then
-        echo "Could not get plugin tag for $DIR from config.json file. Error: $PLUGIN_TAG"
+        echo "Could not get plugin tag for $DIR from config.json file. Could not create $BRANCH for $DIR"
         continue
     else
         echo "Got plugin tag: $PLUGIN_TAG"

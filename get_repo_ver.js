@@ -30,16 +30,14 @@ var file = 'build-tools/config.json';
 
 fs.readFile(file, function (err, data) {
 	if (err) {
-		console.log('Error ' + err);
-		shelljs.exit(1);
+		return 1;
 	}
 
 	data = JSON.parse(data);
 
 	if(!data[branch] || !data[branch][repo])
 	{
-		console.log(repo + ' in ' + branch + ' does not exist in ' + file + '. Please check the file.');
-		shelljs.exit(1);
+		return 1;
 	}
 
 	console.log(data[branch][repo]);
