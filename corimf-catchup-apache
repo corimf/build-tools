@@ -136,8 +136,8 @@ echo "Updating $BASE_BRANCH from $MASTER_ORIGIN to $REMOTE_ORIGIN..."
 if [ "$BASE_BRANCH" = "master" ]
 then
     echo "Getting latest development branches..."
-    # think platform branch: master for platforms and other, dev for plugins
-    for DIR in $PLATFORM_REPOS $OTHER_REPOS
+    # latest dev branches are master for platforms, other, and plugins
+    for DIR in $PLATFORM_REPOS $OTHER_REPOS $PLUGINS
     do
         pushd $DIR
         echo "Checking out $BASE_BRANCH in $DIR..."
@@ -146,17 +146,6 @@ then
         git pull $MASTER_ORIGIN $BASE_BRANCH
         echo "Catching up remote $BASE_BRANCH at $REMOTE_ORIGIN..."
         git push $REMOTE_ORIGIN $BASE_BRANCH
-        popd
-    done
-    for DIR in $PLUGINS
-    do
-        pushd $DIR
-        echo "Checking out dev in $DIR..."
-        git checkout dev || git checkout -b dev $MASTER_ORIGIN/dev
-        echo "Catching up local dev from $MASTER_ORIGIN..."
-        git pull $MASTER_ORIGIN dev
-        echo "Catching up remote dev at $REMOTE_ORIGIN..."
-        git push $REMOTE_ORIGIN dev
         popd
     done
 else
@@ -178,7 +167,7 @@ else
     do
         pushd $DIR
         echo "Checking out master in $DIR..."
-        git checkout master || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/master
+        git checkout master || git checkout -b master $MASTER_ORIGIN/master
         echo "Catching up local master from $MASTER_ORIGIN..."
         git pull $MASTER_ORIGIN master
         echo "Catching up remote master at $REMOTE_ORIGIN..."
