@@ -17,6 +17,32 @@
 		"cordova-plugin-media-capture": "r0.3.0",
 		"cordova-plugin-network-information": "r0.2.8",
 		"cordova-plugin-splashscreen": "r0.3.0",
-		"cordova-plugin-vibration": "r0.3.8"
+		"cordova-plugin-vibration": "r0.3.8",
+                "cordova-blackberry-plugins": "master"
+	},
+	"3.6.1esr": {
+		"cordova-plugin-battery-status": "r0.2.10",
+		"cordova-plugin-camera": "r0.3.1",
+		"cordova-plugin-console": "r0.2.10",
+		"cordova-plugin-contacts": "r0.2.12",
+		"cordova-plugin-device": "r0.2.11",
+		"cordova-plugin-device-motion": "r0.2.9",
+		"cordova-plugin-device-orientation": "r0.3.8",
+		"cordova-plugin-dialogs": "r0.2.9",
+		"cordova-plugin-file": "r1.3.0",
+		"cordova-plugin-file-transfer": "r0.4.5",
+		"cordova-plugin-geolocation": "r0.3.9",
+		"cordova-plugin-globalization": "r0.3.0",
+		"cordova-plugin-inappbrowser": "r0.5.1",
+		"cordova-plugin-media": "r0.2.12",
+		"cordova-plugin-media-capture": "r0.3.2",
+		"cordova-plugin-network-information": "r0.2.11",
+		"cordova-plugin-splashscreen": "r0.3.2",
+                "cordova-plugin-statusbar": "r0.1.7",
+		"cordova-plugin-vibration": "r0.3.10",
+                "cordova-blackberry-plugins": "master",
+                "cordova-lib": "0.21.10",
+                "cordova-plugman": "0.22.7",
+                "cordova-cli": "3.6.1-0.2.10"
 	}
 }

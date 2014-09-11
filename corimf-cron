@@ -132,7 +132,13 @@ echo "Doing the check for plugins and other..."
 for DIR in $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
-    git remote add $RW_ORIGIN https://git-wip-us.apache.org/repos/asf/$DIR.git
+    if [ "$DIR" == "cordova-blackberry-plugins" ]
+    then
+        URL=https://github.com/blackberry/$DIR.git
+    else
+        URL=https://git-wip-us.apache.org/repos/asf/$DIR.git
+    fi
+    git remote add $RW_ORIGIN $URL
     EXPECTED=`git ls-remote --heads $RW_ORIGIN master | cut -f1`
     ACTUAL=`git rev-parse master`
     if [ "$ACTUAL" != "$EXPECTED" ]
@@ -142,6 +148,7 @@ do
     git remote remove $RW_ORIGIN
     popd
 done
+echo "REPORT: ==================================================="
 echo "$REPORT"
 test -z "$REPORT"
 

@@ -65,11 +65,6 @@ trap check_rc EXIT
 echo "Checking that we are one dir above the git repo..."
 test -d $PLATFORM_REPO
 
-echo "Checking that coho is present..."
-test -d cordova-coho
-test -f cordova-coho/coho
-test -x cordova-coho/coho
-
 echo "Checking major version number..."
 MAJOR=`echo $BRANCH | cut -f1 -d.`
 test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
@@ -100,33 +95,14 @@ done
 
 echo "Checking that output directory $NEW_TAG does not already exist..."
 test ! -d $NEW_TAG
+mkdir $NEW_TAG
 
-echo "Computing short names..."
-PLATFORM_REPOS_SHORT=
-for DIR in $PLATFORM_REPOS
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
-    PLATFORM_REPOS_SHORT="$PLATFORM_REPOS_SHORT -r `echo $DIR | cut -f2- -d-`"
+    pushd $DIR
+    git archive --format zip --prefix $DIR/ -o ../$NEW_TAG/$DIR-$NEW_TAG.zip $NEW_TAG
+    popd
 done
-
-PLUGINS_SHORT=
-for DIR in $PLUGINS
-do
-    PLUGINS_SHORT="$PLUGINS_SHORT -r `echo $DIR | cut -f2- -d-`"
-done
-
-OTHER_REPOS_SHORT=
-for DIR in $OTHER_REPOS
-do
-    # cordova-blackberry-plugins is not defined in coho
-    if [ $DIR = "cordova-blackberry-plugins" ]
-    then
-        continue
-    fi
-    OTHER_REPOS_SHORT="$OTHER_REPOS_SHORT -r `echo $DIR | cut -f2- -d-`"
-done
-
-echo "Invoking coho..."
-cordova-coho/coho create-archive --tag $NEW_TAG --sign false --dest $NEW_TAG $PLATFORM_REPOS_SHORT $PLUGINS_SHORT $OTHER_REPOS_SHORT
 
 echo "Getting cordova-blackberry-plugins..."
 SAVE_DIR=`pwd`
@@ -182,8 +158,17 @@ do
     pushd $DIR
     EXPECTED=`git rev-parse $NEW_TAG`
     LOCAL=`git log -1 --pretty=oneline | cut -f1 -d' '`
-    PREV=`git rev-parse $PREV_TAG`
-    DIFF=`git diff --numstat $PREV_TAG $NEW_TAG`
+    if [ -z "`git tag --list $PREV_TAG`" ]
+    then
+        echo "WARNING: is $DIR a new repo? $PREV_TAG is not found."
+        PREV="(non-existent)"
+        NEW_REPO=1
+        DIFF=
+    else
+        PREV=`git rev-parse $PREV_TAG`
+        NEW_REPO=0
+        DIFF=`git diff --numstat $PREV_TAG $NEW_TAG`
+    fi
     if [ -f IBM-MODIFICATIONS.txt ]
     then
         MODIFICATIONS=`git diff $PREV_TAG $NEW_TAG IBM-MODIFICATIONS.txt`
@@ -192,6 +177,9 @@ do
         then
             MODIFICATIONS='(no modifications listed manually)'
         fi
+    elif [ $NEW_REPO == 1 ]
+    then
+        MODIFICATIONS="(*** This appears to be a new repo. Assume all files are new. ***)"
     else
         MODIFICATIONS='(no manual definition file found)'
     fi

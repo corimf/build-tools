@@ -63,6 +63,34 @@ check_rc() {
 
 trap check_rc EXIT
 
+# An idempotent wrapper around the "git tag" command.
+# Usage: git_tag_unless MY_NEW_TAG [TARGET]
+git_tag_unless() {
+    TAG_NAME=$1
+    test ! -z "$TAG_NAME"
+    # TARGET is optional
+    TARGET=$2
+    if [ -z "$TARGET" ]
+    then
+        TARGET="HEAD"
+    fi
+    HASH1=`git rev-parse $TAG_NAME || true`
+    HASH2=`git rev-parse $TARGET || true`
+    if [ "$HASH1" = "$TAG_NAME" ]
+    then
+        # doesn't exist
+        git tag $TAG_NAME
+    elif [ ! -z "$HASH1" -a "$HASH1" = "$HASH2" ]
+    then
+        # already exists like we want.
+        echo "Tag $TAG_NAME already exists at $TARGET, which is OK."
+    else
+        # at a different hash
+        echo "Existing tag $TAG_NAME does not reference the same hash as $TARGET."
+        fail
+    fi
+}
+
 echo "Checking that we are one dir above the git repo..."
 test -d $PLATFORM_REPO
 
@@ -111,6 +139,7 @@ echo "Checking out $BASE_BRANCH for platforms..."
 for DIR in $PLATFORM_REPOS
 do
     pushd $DIR
+    git fetch $MASTER_ORIGIN
     git checkout $BASE_BRANCH || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/$BASE_BRANCH
     git pull $MASTER_ORIGIN $BASE_BRANCH
     git fetch --tags $MASTER_ORIGIN
@@ -124,6 +153,7 @@ echo "Checking out master for plugins and other..."
 for DIR in $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
+    git fetch $MASTER_ORIGIN
     git checkout master || git checkout -b master $MASTER_ORIGIN/master
     git pull $MASTER_ORIGIN master
     git fetch --tags $MASTER_ORIGIN
@@ -143,19 +173,19 @@ do
     echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
     git push $REMOTE_ORIGIN $BRANCH
     echo "Creating tag $NEW_TAG"
-    git tag $NEW_TAG
-    git push $REMOTE_ORIGIN $NEW_TAG
+    git_tag_unless $NEW_TAG
+    git push --tags $REMOTE_ORIGIN
     popd
 done
 echo "Creating branch $BRANCH for plugin repos..."
 for DIR in $PLUGINS
 do
-    #get corresponding plugin tag from json file
+    # get corresponding plugin tag from json file
     PLUGIN_TAG=`node build-tools/get_repo_ver.js $BRANCH $DIR`
     if [ -z "$PLUGIN_TAG" ]
     then
         echo "Could not get plugin tag for $DIR from config.json file. Could not create $BRANCH for $DIR"
-        continue
+        fail
     else
         echo "Got plugin tag: $PLUGIN_TAG"
     fi
@@ -169,24 +199,42 @@ do
         echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
         git push $REMOTE_ORIGIN $BRANCH
         echo "Creating tag $NEW_TAG"
-        git tag $NEW_TAG
-        git push $REMOTE_ORIGIN $NEW_TAG
+        git_tag_unless $NEW_TAG
+        git push --tags $REMOTE_ORIGIN
     else
         echo "Plugin tag: $PLUGIN_TAG does not exist. Could not create $BRANCH for $DIR"
+        fail
     fi
     popd
 done
 echo "Creating branch $BRANCH for other repos..."
 for DIR in $OTHER_REPOS
 do
+    # get corresponding plugin tag from json file
+    TOOL_TAG=`node build-tools/get_repo_ver.js $BRANCH $DIR`
+    if [ -z "$TOOL_TAG" ]
+    then
+        echo "Could not get plugin tag for $DIR from config.json file. Could not create $BRANCH for $DIR"
+        fail
+    else
+        echo "Got tool tag: $TOOL_TAG"
+    fi
+
     pushd $DIR
-    echo "Checking out $BRANCH in $DIR..."
-    git checkout $BRANCH || git checkout -b $BRANCH $MASTER_ORIGIN/master
-    echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
-    git push $REMOTE_ORIGIN $BRANCH
-    echo "Creating tag $NEW_TAG"
-    git tag $NEW_TAG
-    git push $REMOTE_ORIGIN $NEW_TAG
+    # cordova-blackberry-plugins uses master which is not a tag
+    if [ ! -z "`git tag --list $TOOL_TAG`" -o "$TOOL_TAG" = "master" ]
+    then
+        echo "Checking out $BRANCH in $DIR..."
+        git checkout $BRANCH || git checkout -b $BRANCH $TOOL_TAG
+        echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
+        git push $REMOTE_ORIGIN $BRANCH
+        echo "Creating tag $NEW_TAG"
+        git_tag_unless $NEW_TAG
+        git push --tags $REMOTE_ORIGIN
+    else
+        echo "Tool tag: $TOOL_TAG does not exist. Could not create $BRANCH for $DIR"
+        fail
+    fi
     popd
 done
 
