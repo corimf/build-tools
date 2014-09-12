@@ -48,7 +48,8 @@ circumstances.
 1. [all] [update] Run corimf-tag to create a new "u" tag on the branch
 1. Run corimf-snapshot to create a zip of each platform source.
    - Make sure the file IBM-RELEASE-NOTES.txt is populated and shows the
-     files that have changed since the previous drop.
+     files that have changed since the previous drop. NOTE: IBM-MODIFICATIONS.txt
+     file does not exist until someone creates it at the first update to the repo
 1. For versions before 3.4.0, run the platform build scripts
    - corimf-build-android
 
