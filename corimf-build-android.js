@@ -103,6 +103,13 @@ var AndroidPreBuildSpecifics = function () {
 AndroidBuildSpecifics = function (DPO) {
     console.log("Building the project (apk)...");
     shelljs.cd(DPO.PROJECT_DIR);
+    var majorBranchNum = Number(settings.BRANCH.substring(0,3));
+    if(majorBranchNum > 3.1 && settings.PROJECT_ONLY) {
+        tests.reportStatus(shelljs.exec(path.join('cordova','build'), {
+            silent : true
+        }).code == 0);
+    }
+    else{
     tests.reportStatus(shelljs.exec('ant debug', {
             silent : true
         }).code == 0);
@@ -110,6 +117,7 @@ AndroidBuildSpecifics = function (DPO) {
     tests.reportStatus(shelljs.exec('jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova', {
             silent : true
         }).code == 0);
+     }
     shelljs.cd('..');
     if (!settings.PROJECT_ONLY) {
         console.log("Creating snapshot content in " + DPO.SNAPSHOT_DIR);
@@ -130,4 +138,3 @@ AndroidBuildSpecifics = function (DPO) {
     }
     return true;
 };
-
