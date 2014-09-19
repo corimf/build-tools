@@ -62,6 +62,8 @@ var DisplayScriptInformation = function(scriptWorkflow) {
     console.log('REMOTE_ORIGIN = ' + settings.REMOTE_ORIGIN);
     console.log('BRANCH = ' + settings.BRANCH);
     console.log('NEW_TAG = ' + settings.NEW_TAG);
+    console.log('PROJECT_ONLY = ' + settings.PROJECT_ONLY);
+    console.log('MOBILESPEC = ' + settings.MOBILESPEC);
     if(settings.SKIP_PLUGIN.length > 0)
         console.log('SKIP_PLUGIN = ' + settings.SKIP_PLUGIN);
     if(settings.PROJECT_ONLY)
@@ -202,6 +204,7 @@ var BuildProject = function(platformSpecificCode) {
     var pathCorimf = shelljs.pwd();
     var PROJECT_DIR = 'example-' + platform + '-' + settings.NEW_TAG;
     var SNAPSHOT_DIR = 'forgsa-' + platform + '-' + settings.NEW_TAG;
+    var MOBILESPEC_DIR = 'mobilespec-' + platform + '-' + settings.NEW_TAG;
     var PROJECT_NAME = platform === "wp8" ? 'WPCordovaClassLib' : 'EXAMPLE';
     var pathProject = pathCorimf + path.sep + PROJECT_DIR;
     var pathSnapshot = tmpDir + path.sep + SNAPSHOT_DIR;
@@ -227,10 +230,27 @@ var BuildProject = function(platformSpecificCode) {
         reportStatus((execOutput = shelljs.exec(execCommand, {silent:true})).code == 0, execOutput.output);
     }
 
+    //build mobilespec
+    if(settings.MOBILESPEC) {
+        var WWW_DIR;
+        if (platform == "ios")
+            WWW_DIR = '/www';
+        else if(platform == "android")
+            WWW_DIR = '/assets/www';
+
+        console.log('Creating mobilespec...');
+        console.log('Checking that project ' + MOBILESPEC_DIR + ' does not exist yet...');
+        reportStatus(!shelljs.test('-d', MOBILESPEC_DIR));
+
+        shelljs.cp('-R', path.join(PROJECT_DIR, '/*'), MOBILESPEC_DIR);
+        shelljs.cp('-Rf', 'cordova-mobile-spec/*', path.join(MOBILESPEC_DIR, WWW_DIR));
+    }
+
     //Execute platform specific code to populate SNAPSHOT_DIR, moving needed files & directories into SNAPSHOT_DIR
     var dataPassingObject = {
         "SNAPSHOT_DIR":tmpDir + path.sep + SNAPSHOT_DIR,
         "PROJECT_DIR":PROJECT_DIR,
+        "MOBILESPEC_DIR":MOBILESPEC_DIR,
         "PROJECT_NAME":PROJECT_NAME
     };
     platformSpecificCode(dataPassingObject);

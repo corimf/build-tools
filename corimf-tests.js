@@ -64,6 +64,11 @@ function checkReposExist(repos) {
 	for (var i = 0; i < repos.length; i++) {
 		reportStatus(shelljs.test('-d', repos[i]));
 	}
+
+	if (settings.MOBILESPEC)
+	{
+		reportStatus(shelljs.test('-d', 'cordova-mobile-spec'));
+	}
 }
 
 function checkRemoteExists(repos, remoteName) {

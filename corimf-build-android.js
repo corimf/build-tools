@@ -21,7 +21,8 @@
 # Use the -e option so the script will fail on the first non-zero return code.
 
 # This is a script to automate building a 2.3.0 thru 3.1.0 snapshot of Android
-# Cordova for delivery to a product team to integrate. The manual process for
+# Cordova for delivery to a product team to integrate. It also automates building
+# a runtime sample project and mobilespec for 2.3.0 thru 3.4.0. The manual process for
 # this is described in our wiki. It is assumed that the platform/plugman/plugin
 # repos have already been tagged with NEW_TAG. If you are just doing a test
 # build and not creating a snapshot for product integration, you can get around
@@ -101,9 +102,30 @@ var AndroidPreBuildSpecifics = function () {
 
 // Callback function that is called from with corimf-build.js BuildProject()
 AndroidBuildSpecifics = function (DPO) {
+    var majorBranchNum = Number(settings.BRANCH.substring(0,3));
+
+    //build mobilespec project
+    if (settings.MOBILESPEC) {
+        console.log("Building the project (apk) for mobilespec...");
+        shelljs.cd(DPO.MOBILESPEC_DIR);
+        if (majorBranchNum > 3.1)
+        {
+            tests.reportStatus(shelljs.exec(path.join('cordova','build'), {
+                    silent : true
+                }).code == 0);
+        }
+        else
+        {
+            tests.reportStatus(shelljs.exec('ant debug', {
+                    silent : true
+                }).code == 0);
+        }
+        shelljs.cd('..');
+    }
+
+    //build example project
     console.log("Building the project (apk)...");
     shelljs.cd(DPO.PROJECT_DIR);
-    var majorBranchNum = Number(settings.BRANCH.substring(0,3));
     if(majorBranchNum > 3.1 && settings.PROJECT_ONLY) {
         tests.reportStatus(shelljs.exec(path.join('cordova','build'), {
             silent : true

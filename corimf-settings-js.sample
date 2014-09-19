@@ -27,6 +27,10 @@
 // process artifact for this platform
 var PLATFORM_REPO = 'cordova-wp8',
 
+	// set to false if you want to build entire deliverable for India team, true for just default ESR project
+	PROJECT_ONLY = false,
+	// set to true if you also want to build mobilespec, false otherwise
+	MOBILESPEC = false,
 	// name of the git remote repository from "git remote -v"
 	REMOTE_ORIGIN = 'origin',
 	
@@ -61,11 +65,13 @@ var PLATFORM_REPO = 'cordova-wp8',
 	
 	PLUGIN_COUNT = 18,
 	
-	PLUGINS = ['cordova-plugin-battery-status', 'cordova-plugin-camera', 'cordova-plugin-console', 'cordova-plugin-contacts', 'cordova-plugin-device', 'cordova-plugin-device-motion', 'cordova-plugin-device-orientation', 'cordova-plugin-dialogs', 'cordova-plugin-file', 'cordova-plugin-file-transfer', 'cordova-plugin-geolocation', 'cordova-plugin-globalization', 'cordova-plugin-inappbrowser', 'cordova-plugin-media', 'cordova-plugin-media-capture', 'cordova-plugin-network-information', 'cordova-plugin-splashscreen', 'cordova-plugin-vibration']
-	PLATFORM_REPOS = ['cordova-android', 'cordova-blackberry', 'cordova-ios', 'cordova-windows', 'cordova-wp8', 'cordova-js']
+	PLUGINS = ['cordova-plugin-battery-status', 'cordova-plugin-camera', 'cordova-plugin-console', 'cordova-plugin-contacts', 'cordova-plugin-device', 'cordova-plugin-device-motion', 'cordova-plugin-device-orientation', 'cordova-plugin-dialogs', 'cordova-plugin-file', 'cordova-plugin-file-transfer', 'cordova-plugin-geolocation', 'cordova-plugin-globalization', 'cordova-plugin-inappbrowser', 'cordova-plugin-media', 'cordova-plugin-media-capture', 'cordova-plugin-network-information', 'cordova-plugin-splashscreen', 'cordova-plugin-vibration'],
+	PLATFORM_REPOS = ['cordova-android', 'cordova-blackberry', 'cordova-ios', 'cordova-windows', 'cordova-wp8', 'cordova-js'],
 	OTHER_REPOS = ['cordova-blackberry-plugins', 'cordova-cli', 'cordova-plugman'];
 	
 exports.PLATFORM_REPO = PLATFORM_REPO;
+exports.PROJECT_ONLY = PROJECT_ONLY;
+exports.MOBILESPEC = MOBILESPEC;
 exports.REMOTE_ORIGIN = REMOTE_ORIGIN;
 exports.BRANCH = BRANCH;
 exports.NEW_TAG = NEW_TAG;
