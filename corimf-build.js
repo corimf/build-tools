@@ -293,6 +293,23 @@ var reportStatus = function(testStatus, testOutput) {
     }
 };
 
+//Reads all files from a location and stores the file paths into the provided array.
+//Usage eg: var wwwList = [];
+//wwwList = getAllFiles(path.join(shelljs.pwd(), 'cordova-android'), wwwList);
+var getAllFiles = function (dirPath, fileTree) {
+    var arrayList = fs.readdirSync(dirPath);
+    arrayList.forEach(function (file) {
+        var pathFile = path.join(dirPath, file);
+        if (fs.statSync(pathFile).isDirectory()) {
+            getAllFiles(pathFile, fileTree);
+        } else {
+            fileTree.push(pathFile);
+            console.log(pathFile);
+        }
+    });
+    return fileTree;
+};
+
 function RemoveTempDir() {
     if(tmpDir) {
         shelljs.rm('-rf', tmpDir)
@@ -323,9 +340,11 @@ console.log("Checking for unzip command");
         reportStatus(false, "Cannot build full deliverable for branches above 3.1 using this script, please either set PROJECT_ONLY to true in settings or use other script");
     }
 }
+
 exports.SetPlatform = SetPlatform;
 exports.DisplayScriptInformation = DisplayScriptInformation;
 exports.DisplayBuildInformation = DisplayBuildInformation;
 exports.RunPreliminaryTests = RunPreliminaryTests;
 exports.BuildProject = BuildProject;
 exports.reportStatus = reportStatus;
+exports.getAllFiles = getAllFiles;
