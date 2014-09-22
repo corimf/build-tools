@@ -304,7 +304,6 @@ var getAllFiles = function (dirPath, fileTree) {
             getAllFiles(pathFile, fileTree);
         } else {
             fileTree.push(pathFile);
-            console.log(pathFile);
         }
     });
     return fileTree;
