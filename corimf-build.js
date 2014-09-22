@@ -205,7 +205,7 @@ var BuildProject = function(platformSpecificCode) {
     var PROJECT_DIR = 'example-' + platform + '-' + settings.NEW_TAG;
     var SNAPSHOT_DIR = 'forgsa-' + platform + '-' + settings.NEW_TAG;
     var MOBILESPEC_DIR = 'mobilespec-' + platform + '-' + settings.NEW_TAG;
-    var PROJECT_NAME = platform === "wp8" ? 'WPCordovaClassLib' : 'EXAMPLE';
+    var PROJECT_NAME = platform === "wp8" ? 'WPCordovaClassLib' : 'example';
     var pathProject = pathCorimf + path.sep + PROJECT_DIR;
     var pathSnapshot = tmpDir + path.sep + SNAPSHOT_DIR;
 
@@ -218,7 +218,7 @@ var BuildProject = function(platformSpecificCode) {
     }
 
     var execPath = platform === "wp8" ? path.join(pathCorimf, 'cordova-' + platform, 'wp8', 'bin', 'create') : path.join(pathCorimf, 'cordova-' + platform, 'bin', 'create');
-    var cmd = execPath + ' ' + PROJECT_DIR + ' com.example ' + PROJECT_NAME;
+    var cmd = execPath + ' ' + PROJECT_DIR + ' '+ PROJECT_NAME +' ' + PROJECT_NAME;
     console.log('Creating a new ' + platform.toUpperCase() + ' Project...');
     console.log('Running: \n' + cmd);
     tests.reportStatus(shelljs.exec(cmd, {silent : false}).code == 0);
@@ -234,16 +234,16 @@ var BuildProject = function(platformSpecificCode) {
     if(settings.MOBILESPEC) {
         var WWW_DIR;
         if(platform == "android")
-            WWW_DIR = '/assets/www';
+            WWW_DIR = path.join('assets','www');
         else
-            WWW_DIR = '/www';
+            WWW_DIR = 'www';
 
         console.log('Creating mobilespec...');
         console.log('Checking that project ' + MOBILESPEC_DIR + ' does not exist yet...');
         reportStatus(!shelljs.test('-d', MOBILESPEC_DIR));
 
-        shelljs.cp('-R', path.join(PROJECT_DIR, '/*'), MOBILESPEC_DIR);
-        shelljs.cp('-Rf', 'cordova-mobile-spec/*', path.join(MOBILESPEC_DIR, WWW_DIR));
+        shelljs.cp('-R', path.join(PROJECT_DIR,'*'), MOBILESPEC_DIR);
+        shelljs.cp('-Rf', path.join(process.cwd(),'cordova-mobile-spec','*'), path.join(MOBILESPEC_DIR, WWW_DIR));
     }
 
     //Execute platform specific code to populate SNAPSHOT_DIR, moving needed files & directories into SNAPSHOT_DIR
@@ -296,14 +296,14 @@ var reportStatus = function(testStatus, testOutput) {
 //Reads all files from a location and stores the file paths into the provided array.
 //Usage eg: var wwwList = [];
 //wwwList = getAllFiles(path.join(shelljs.pwd(), 'cordova-android'), wwwList);
-var getAllFiles = function (dirPath, fileTree) {
+var getAllFiles = function (dirPath, fileTree, basePath) {
     var arrayList = fs.readdirSync(dirPath);
     arrayList.forEach(function (file) {
         var pathFile = path.join(dirPath, file);
         if (fs.statSync(pathFile).isDirectory()) {
-            getAllFiles(pathFile, fileTree);
+            getAllFiles(pathFile, fileTree, basePath);
         } else {
-            fileTree.push(pathFile);
+            fileTree.push(pathFile.replace(basePath, ''));
         }
     });
     return fileTree;

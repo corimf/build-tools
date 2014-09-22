@@ -40,20 +40,20 @@ tests.reportStatus(!build.DisplayScriptInformation(function() {
 var WP8BuildSpecifics = function(DPO) {
 	console.log('Building project in Release:AnyCPU mode...');
 	// wp8 create script does not name sln and csproj files appropriately, so rename them
-	shelljs.exec('mv CordovaWP8AppProj.csproj WPCordovaClassLib.csproj', {silent:true});
-	shelljs.exec('mv CordovaWP8Solution.sln WPCordovaClassLib.sln', {silent:true});
+	shelljs.exec('mv CordovaWP8AppProj.csproj '+ DPO.PROJECT_NAME +'.csproj', {silent:true});
+	shelljs.exec('mv CordovaWP8Solution.sln '+ DPO.PROJECT_NAME +'.sln', {silent:true});
 
 	//build mobilespec in visual studio
 	if (settings.MOBILESPEC)
 	{
 		//register www files
-		addWWWForMobileSpec(DPO.MOBILESPEC_DIR);
+		addWWWForMobileSpec(DPO.MOBILESPEC_DIR, DPO.PROJECT_NAME+'.csproj');
 
-		tests.reportStatus(shelljs.exec('msbuild' + ' ' + path.join(DPO.MOBILESPEC_DIR, 'CordovaWP8Solution.sln') + ' ' +'/p:Configuration=Release', {silent:false}).code == 0);
+		tests.reportStatus(shelljs.exec('msbuild' + ' ' + path.join(DPO.MOBILESPEC_DIR, DPO.PROJECT_NAME +'.sln') + ' ' +'/p:Configuration=Release', {silent:false}).code == 0);
 	}
 
 	// build the sample project in Visual Studio
-	tests.reportStatus(shelljs.exec('msbuild' + ' ' + path.join(DPO.PROJECT_DIR, 'WPCordovaClassLib.sln') + ' ' +'/p:Configuration=Release', {silent:false}).code == 0);
+	tests.reportStatus(shelljs.exec('msbuild' + ' ' + path.join(DPO.PROJECT_DIR, DPO.PROJECT_NAME +'.sln') + ' ' +'/p:Configuration=Release', {silent:false}).code == 0);
 	if(!settings.PROJECT_ONLY) {
 		console.log('Creating snapshot content in ' + DPO.SNAPSHOT_DIR);
 		shelljs.mkdir(DPO.SNAPSHOT_DIR);
@@ -64,7 +64,7 @@ var WP8BuildSpecifics = function(DPO) {
 		tests.reportStatus(shelljs.cp('-Rf', path.join(DPO.PROJECT_DIR,'www'), DPO.SNAPSHOT_DIR));
 
 		// get the dll from Bin/Release
-		tests.reportStatus(shelljs.cp('-Rf', path.join(DPO.PROJECT_DIR,'Bin', 'Release', 'com.example.dll'), DPO.SNAPSHOT_DIR));
+		tests.reportStatus(shelljs.cp('-Rf', path.join(DPO.PROJECT_DIR,'Bin', 'Release',DPO.PROJECT_NAME +'.dll'), DPO.SNAPSHOT_DIR));
 
 		console.log('Checking cordova.js file for PhoneGap variable...');
 		// the following line does not exist in the git repo, but must be included in the copy of
@@ -82,29 +82,27 @@ var WP8BuildSpecifics = function(DPO) {
 	// done manually for windows compatibility.
 }
 
-function addWWWForMobileSpec(projDir) {
+function addWWWForMobileSpec(projDir, projName) {
 	//parse elementtree
-	var content = fs.readFileSync(path.join(projDir, 'CordovaWP8AppProj.csproj'), 'utf-8');
+	var content = fs.readFileSync(path.join(projDir, projName), 'utf-8');
 	if (content) {
 		content = content.substring(content.indexOf('<'));
 	}
 	var elementTree = new et.ElementTree(et.XML(content));
 
 	//get all files in www dir and add them to element tree
-	var wwwList = [];
-	wwwList = build.getAllFiles(path.join(shelljs.pwd(), projDir, 'www'), wwwList);
+	var wwwList = [], baseDir = path.join(shelljs.pwd(), projDir, 'www');
+	wwwList = build.getAllFiles(baseDir, wwwList, baseDir+path.sep);
 	wwwList.forEach(function(fileName) {
-		//grab only path relative to project directory
-		var res = fileName.split("www");
-		var relativePath = path.join('www', res[1]);
-
+		//Set leading www folder for relative path
+        fileName= path.join('www', fileName);
 		//if file is not already in xml then add it
-		if (!fileExists(elementTree, relativePath))
-			addFile(elementTree, relativePath);
+		if (!fileExists(elementTree, fileName))
+			addFile(elementTree, fileName);
 	});
 
 	//write the element tree to the xml file
-	fs.writeFileSync(path.join(projDir, 'CordovaWP8AppProj.csproj'), elementTree.write({indent:4}), 'utf-8');
+	fs.writeFileSync(path.join(projDir, projName), elementTree.write({indent:4}), 'utf-8');
 }
 
 function addFile(tree, relPath) {
