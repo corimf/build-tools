@@ -25,6 +25,8 @@ var build = require('./corimf-build.js'),
 	settings = require('./corimf-settings.js'),
 	tests = require('./corimf-tests.js'),
 	shelljs = require('shelljs'),
+	et = require('elementtree'),
+	fs = require('fs'),
     path = require('path');
 
 tests.reportStatus(!build.DisplayScriptInformation(function() {
@@ -40,6 +42,15 @@ var WP8BuildSpecifics = function(DPO) {
 	// wp8 create script does not name sln and csproj files appropriately, so rename them
 	shelljs.exec('mv CordovaWP8AppProj.csproj WPCordovaClassLib.csproj', {silent:true});
 	shelljs.exec('mv CordovaWP8Solution.sln WPCordovaClassLib.sln', {silent:true});
+
+	//build mobilespec in visual studio
+	if (settings.MOBILESPEC)
+	{
+		//register www files
+		addWWWForMobileSpec(DPO.MOBILESPEC_DIR);
+
+		tests.reportStatus(shelljs.exec('msbuild' + ' ' + path.join(DPO.MOBILESPEC_DIR, 'CordovaWP8Solution.sln') + ' ' +'/p:Configuration=Release', {silent:false}).code == 0);
+	}
 
 	// build the sample project in Visual Studio
 	tests.reportStatus(shelljs.exec('msbuild' + ' ' + path.join(DPO.PROJECT_DIR, 'WPCordovaClassLib.sln') + ' ' +'/p:Configuration=Release', {silent:false}).code == 0);
@@ -69,4 +80,57 @@ var WP8BuildSpecifics = function(DPO) {
     return true;
 	// Note that the script does not yet zip the snapshot directory; this must be
 	// done manually for windows compatibility.
+}
+
+function addWWWForMobileSpec(projDir) {
+	//parse elementtree
+	var content = fs.readFileSync(path.join(projDir, 'CordovaWP8AppProj.csproj'), 'utf-8');
+	if (content) {
+		content = content.substring(content.indexOf('<'));
+	}
+	var elementTree = new et.ElementTree(et.XML(content));
+
+	//get all files in www dir and add them to element tree
+	var wwwList = [];
+	wwwList = build.getAllFiles(path.join(shelljs.pwd(), projDir, 'www'), wwwList);
+	wwwList.forEach(function(fileName) {
+		//grab only path relative to project directory
+		var res = fileName.split("www");
+		var relativePath = path.join('www', res[1]);
+
+		//if file is not already in xml then add it
+		if (!fileExists(elementTree, relativePath))
+			addFile(elementTree, relativePath);
+	});
+
+	//write the element tree to the xml file
+	fs.writeFileSync(path.join(projDir, 'CordovaWP8AppProj.csproj'), elementTree.write({indent:4}), 'utf-8');
+}
+
+function addFile(tree, relPath) {
+	var item = new et.Element('ItemGroup');
+	var newElem = new et.Element('Content');
+	newElem.attrib.Include = relPath;
+	item.append(newElem);
+
+	tree.getroot().append(item);
+}
+
+function fileExists(tree, relPath) {
+	var exists = false;
+
+	tree.findall('ItemGroup').forEach(function(group) {
+		var filesToRemove = group.findall('Content').filter(function(item) {
+			if(!item.attrib.Include)
+				return false;
+
+			else
+				return item.attrib.Include == relPath;
+		});
+
+		if (filesToRemove.length > 0)
+			exists = true;
+	});
+
+	return exists;
 }

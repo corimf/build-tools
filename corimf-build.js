@@ -233,10 +233,10 @@ var BuildProject = function(platformSpecificCode) {
     //build mobilespec
     if(settings.MOBILESPEC) {
         var WWW_DIR;
-        if (platform == "ios")
-            WWW_DIR = '/www';
-        else if(platform == "android")
+        if(platform == "android")
             WWW_DIR = '/assets/www';
+        else
+            WWW_DIR = '/www';
 
         console.log('Creating mobilespec...');
         console.log('Checking that project ' + MOBILESPEC_DIR + ' does not exist yet...');
