@@ -67,13 +67,13 @@ issue in Cordova. As an alternative, you can simply download the posted runtime
 sample projects on [GSA](https://rtpgsa.ibm.com/projects/c/cordova/cordova-ESR-runtime-samples/).
 
 1. Create your own corimf-settings.js from the sample provided.
-   -Set PROJECT_ONLY and MOBILESPEC to true if you only want to 
+   - Set PROJECT_ONLY and MOBILESPEC to true if you only want to 
    get the runtime sample projects.
-   -Set BRANCH as the ESR branch you want to build from and
+   - Set BRANCH as the ESR branch you want to build from and
    NEW_TAG as the latest tag from that ESR branch, which can be
    found [here](https://w3-connections.ibm.com/wikis/home?lang=en-us#!/wiki/W9ae505f4bacb_461a_acbb_680b6ed21a7f/page/Extended%20Service%20Release%20%28ESR%29).
-   -Set REMOTE_ORIGIN and BASE_BRANCH according to their description
-   -If only building esr runtime projects, no other values need to
+   - Set REMOTE_ORIGIN and BASE_BRANCH according to their description
+   - If only building esr runtime projects, no other values need to
    be changed unless there are special circumstances you are trying
    to recreate, like skipping a plugin
 1. Ensure you have all the repos on your machine at the same level
