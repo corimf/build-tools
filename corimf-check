@@ -89,8 +89,12 @@ echo "Checking that there is a change to the IBM-MODIFICATIONS.txt file since th
 RESULT=`git log --format=oneline $PREV_TAG.. IBM-MODIFICATIONS.txt | wc -l`
 test "$RESULT" -gt 0
 
-echo "Checking that the new tag ends in uNUM..."
-echo $NEW_TAG | grep 'u[0-9]\{1,\}$'
+echo "Checking that the new tag ends in uNUM or rcNUM..."
+U=$(echo $NEW_TAG | grep 'u[0-9]\{1,\}$') || true
+echo "U=$U"
+RC=$(echo $NEW_TAG | grep 'rc[1-9]$') || true
+echo "RC=$RC"
+test ! -z "$U" -o ! -z "$RC"
 
 echo "Checking that the new tag is present in the local repo..."
 git rev-parse --verify $NEW_TAG
