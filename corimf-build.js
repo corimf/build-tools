@@ -218,7 +218,7 @@ var BuildProject = function(platformSpecificCode) {
     }
 
     var execPath = platform === "wp8" ? path.join(pathCorimf, 'cordova-' + platform, 'wp8', 'bin', 'create') : path.join(pathCorimf, 'cordova-' + platform, 'bin', 'create');
-    var cmd = execPath + ' ' + PROJECT_DIR + ' '+ PROJECT_NAME +' ' + PROJECT_NAME;
+    var cmd = execPath + ' ' + PROJECT_DIR + ' '+ 'com.corimf.'+PROJECT_NAME +' ' + PROJECT_NAME;
     console.log('Creating a new ' + platform.toUpperCase() + ' Project...');
     console.log('Running: \n' + cmd);
     tests.reportStatus(shelljs.exec(cmd, {silent : false}).code == 0);
@@ -241,9 +241,9 @@ var BuildProject = function(platformSpecificCode) {
         console.log('Creating mobilespec...');
         console.log('Checking that project ' + MOBILESPEC_DIR + ' does not exist yet...');
         reportStatus(!shelljs.test('-d', MOBILESPEC_DIR));
-
+        var mobilespecSource = settings.BRANCH === '3.6.1esr' ? path.join(process.cwd(),'cordova-mobile-spec','www','*') : path.join(process.cwd(),'cordova-mobile-spec','*');
         shelljs.cp('-R', path.join(PROJECT_DIR,'*'), MOBILESPEC_DIR);
-        shelljs.cp('-Rf', path.join(process.cwd(),'cordova-mobile-spec','*'), path.join(MOBILESPEC_DIR, WWW_DIR));
+        shelljs.cp('-Rf', mobilespecSource, path.join(MOBILESPEC_DIR, WWW_DIR));
     }
 
     //Execute platform specific code to populate SNAPSHOT_DIR, moving needed files & directories into SNAPSHOT_DIR
