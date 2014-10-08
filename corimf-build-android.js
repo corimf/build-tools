@@ -135,10 +135,14 @@ AndroidBuildSpecifics = function (DPO) {
     tests.reportStatus(shelljs.exec('ant debug', {
             silent : true
         }).code == 0);
-    // capture the plugins in a jar for Worklight as a convenience
-    tests.reportStatus(shelljs.exec('jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova', {
-            silent : true
-        }).code == 0);
+
+        if (majorBranchNum > 2.6)
+        {
+            // capture the plugins in a jar for Worklight as a convenience
+            tests.reportStatus(shelljs.exec('jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova', {
+                    silent : true
+                }).code == 0);
+        }
      }
     shelljs.cd('..');
     if (!settings.PROJECT_ONLY) {
