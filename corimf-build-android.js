@@ -136,7 +136,7 @@ AndroidBuildSpecifics = function (DPO) {
             silent : true
         }).code == 0);
 
-        if (majorBranchNum > 2.6)
+        if (majorBranchNum >= 3.0)
         {
             // capture the plugins in a jar for Worklight as a convenience
             tests.reportStatus(shelljs.exec('jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova', {
