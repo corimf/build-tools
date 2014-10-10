@@ -56,7 +56,7 @@ var AndroidPreBuildSpecifics = function () {
     var VERSION = (shelljs.exec('javac -version 2>&1 | cut -f2 -d.', {
             silent : true
         }).output).replace(/(\r\n|\n|\r)/gm, "");
-    if (VERSION >= 5) {
+    if (VERSION >= 5 && VERSION < 7) {
         console.log("Java version " + VERSION + " fully compatible");
         if (settings.BRANCH == "2.6.0esr") {
             console.log("Updating platform to use API 17...");
