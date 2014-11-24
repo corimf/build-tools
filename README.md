@@ -34,37 +34,44 @@ circumstances.
    run it with BASE_BRANCH=3.4.x if you already have your 3.4.0esr branch.
    Though you may think this needs to get run only when creating a new esr
    branch, it also comes in handy when you want to cherry-pick from master.
-1. [update] Run corimf-catchup to get your local repos up-to-date from corimf,
-   if more than one person is contributing to a single fix.
+1. [update] Run corimf-catchup to get your local repos up-to-date from corimf.
+   It will checkout the desired branch for all the repos. This is important
+   since more than one person is contributing fixes.
 1. [creation] Run corimf-newver to create a new ESR branch from an existing
    Apache branch and put it on corimf. Set BASE_BRANCH=3.4.x before running.
 1. [update] Make your changes to the ESR branch, commit them and push them to
    corimf.
 1. [all] [update] Run corimf-check to sanity check everything. This needs to be
    run in the git repo that you updated ( for example 'cordova-ios').
+1. [all] [update] Run corimf-tag to create a new "u" tag on the branch
 1. [all] Run corimf-show-plugin-versions to verify that the present versions of
    the plugins are what is desired (match what the platforms were tested
-   against by the community)
-1. [all] [update] Run corimf-tag to create a new "u" tag on the branch
+   against by the community) (also compare to build-tools/config.json)
 1. Run corimf-snapshot to create a zip of each platform source.
    - Make sure the file IBM-RELEASE-NOTES.txt is populated and shows the
-     files that have changed since the previous drop. NOTE: IBM-MODIFICATIONS.txt
-     file does not exist until someone creates it at the first update to the repo
-1. For versions before 3.4.0, run the platform build scripts
-   - corimf-build-android
+     files that have changed since the previous drop.
+     NOTE: IBM-MODIFICATIONS.txt file does not exist until someone creates it
+     at the first update to the repo
+1. For versions before 3.4.0, run the platform build scripts to build a snapshot
+   with object code.
+   - corimf-build-android.js (preferred) (see below)
+   - corimf-build-android (deprecated)
+1. For all versions, create a new HelloWorld project and mobile-spec project
+   for uploading to GSA:
+   - corimf-build-android.js
 
 # JS Scripts Execution
 
 ## Creating ESR helloworld and mobilespec runtime samples
 
-For the Cordova team, these scripts can be used to create runtime sample projects
-to post to GSA for other teams to use when debugging issues.
+For the Cordova team, these scripts can be used to create runtime sample 
+projects to post to GSA for other teams to use when debugging issues.
 
 For the integration team and others, these scripts can be used to create both a
 standalone Cordova application to be used when isolating issues to/from Cordova
-and a Cordova testing framework app (mobilespec) to quickly verify if there is an
-issue in Cordova. As an alternative, you can simply download the posted runtime
-sample projects on [GSA](https://rtpgsa.ibm.com/projects/c/cordova/cordova-ESR-runtime-samples/).
+and a Cordova testing framework app (mobilespec) to quickly verify if there is
+an issue in Cordova. As an alternative, you can simply download the posted
+runtime sample projects on [GSA](https://rtpgsa.ibm.com/projects/c/cordova/cordova-ESR-runtime-samples/).
 
 1. Create your own corimf-settings.js from the sample provided.
    - Set PROJECT_ONLY and MOBILESPEC to true if you only want to 
