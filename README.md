@@ -57,7 +57,7 @@ circumstances.
    - corimf-build-android.js (preferred) (see below)
    - corimf-build-android (deprecated)
 1. For all versions, create a new HelloWorld project and mobile-spec project
-   for uploading to GSA:
+   and upload to GSA in /projects/c/cordova/cordova-ESR-runtime-samples:
    - corimf-build-android.js
 
 # JS Scripts Execution
