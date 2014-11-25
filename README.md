@@ -44,9 +44,10 @@ circumstances.
 1. [all] [update] Run corimf-check to sanity check everything. This needs to be
    run in the git repo that you updated ( for example 'cordova-ios').
 1. [all] [update] Run corimf-tag to create a new "u" tag on the branch
-1. [all] Run corimf-show-plugin-versions to verify that the present versions of
-   the plugins are what is desired (match what the platforms were tested
-   against by the community) (also compare to build-tools/config.json)
+1. [all] For versions 3.1.0esr and above, run corimf-show-plugin-versions to
+   verify that the present versions of the plugins are what is desired (match
+   what the platforms were tested against by the community) (also compare to
+   build-tools/config.json)
 1. Run corimf-snapshot to create a zip of each platform source.
    - Make sure the file IBM-RELEASE-NOTES.txt is populated and shows the
      files that have changed since the previous drop.
@@ -88,7 +89,7 @@ runtime sample projects on [GSA](https://rtpgsa.ibm.com/projects/c/cordova/cordo
    that was specified in the settings file
 1. Ensure you have the appropriate environment set up for whatever
    platform you will be building (Xcode, Android SDK, etc)
-1. Run "node build-tools/corimf-build-platform.js"
+1. Run "node build-tools/corimf-build-PLATFORM.js"
    (i.e. node build-tools/corimf-build-ios.js). You will be prompted
    to confirm that all the settings are correct.
 1. Once the script finishes running you will have a directory for the
