@@ -97,3 +97,12 @@ runtime sample projects on [GSA](https://rtpgsa.ibm.com/projects/c/cordova/cordo
    (mobilespec-platform-tag). Within those, you can use the command
    './cordova/run' to build and run the projects. Edit the www files
    as needed to debug an issue.
+
+# Creating mobilespec for Worklight
+
+To get mobilespec running inside a Worklight project, follow these steps:
+
+1. Ensure you have the cordova-mobile-spec repo cloned and checked out at the version you need.
+1. Run "perl build-tools/mobilespec-for-worklight.pl <cordova version>", i.e. perl build-tools/mobilespec-for-worklight.pl 3.4
+1. A directory 'mobilespec-for-worklight' will be created. Copy all of the files from that directory into the 'common' directory in your Worklight project. Allow the necessary files to be overwritten.
+1. Copy the whitelist from mobilespec's config.xml to the config.xml in your Worklight project located in yourProject -> apps -> yourProject -> whatever platform -> native
