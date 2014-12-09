@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use lib 'tools/perllib';
+use lib 'build-tools/perllib';
 use HTML::TreeBuilder;
 use HTML::Element;
 use File::Copy::Recursive qw(dircopy);
