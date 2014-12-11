@@ -135,22 +135,9 @@ do
     popd
 done
 
-echo "Checking out $BASE_BRANCH for platforms..."
-for DIR in $PLATFORM_REPOS
-do
-    pushd $DIR
-    git fetch $MASTER_ORIGIN
-    git checkout $BASE_BRANCH || git checkout -b $BASE_BRANCH $MASTER_ORIGIN/$BASE_BRANCH
-    git pull $MASTER_ORIGIN $BASE_BRANCH
-    git fetch --tags $MASTER_ORIGIN
-    # get this much current in $REMOTE_ORIGIN
-    git push $REMOTE_ORIGIN $BASE_BRANCH
-    git push --tags $REMOTE_ORIGIN
-    popd
-done
-echo "Checking out master for plugins and other..."
-# this does assume you want the latest release for the plugis and other
-for DIR in $PLUGINS $OTHER_REPOS
+echo "Checking out master for platforms, plugins and other..."
+# this does assume you want the latest release for the plugins and other BUT ESR stream will be created from tags in config.xml
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
     git fetch $MASTER_ORIGIN
@@ -167,14 +154,31 @@ echo "Creating branch $BRANCH for platform repos..."
 # master for platforms and other, dev for plugins
 for DIR in $PLATFORM_REPOS
 do
+    # get corresponding platform tag from json file
+    PLATFORM_TAG=`node build-tools/get_repo_ver.js $BRANCH $DIR`
+    if [ -z "$PLATFORM_TAG" ]
+    then
+        echo "Could not get platform tag for $DIR from config.json file. Could not create $BRANCH for $DIR"
+        fail
+    else
+        echo "Got platform tag: $PLATFORM_TAG"
+    fi
+
     pushd $DIR
-    echo "Checking out $BRANCH in $DIR..."
-    git checkout $BRANCH || git checkout -b $BRANCH $MASTER_ORIGIN/$BASE_BRANCH
-    echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
-    git push $REMOTE_ORIGIN $BRANCH
-    echo "Creating tag $NEW_TAG"
-    git_tag_unless $NEW_TAG
-    git push --tags $REMOTE_ORIGIN
+    git fetch $REMOTE_ORIGIN
+    if [ `git tag --list $PLATFORM_TAG` ]
+    then
+        echo "Checking out $BRANCH in $DIR..."
+        git checkout $BRANCH || git checkout -b $BRANCH $PLATFORM_TAG
+        echo "Pushing $BRANCH to $REMOTE_ORIGIN..."
+        git push $REMOTE_ORIGIN $BRANCH
+        echo "Creating tag $NEW_TAG"
+        git_tag_unless $NEW_TAG
+        git push --tags $REMOTE_ORIGIN
+    else
+        echo "Platform tag: $PLATFORM_TAG does not exist. Could not create $BRANCH for $DIR"
+        fail
+    fi
     popd
 done
 echo "Creating branch $BRANCH for plugin repos..."
