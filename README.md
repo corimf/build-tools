@@ -43,7 +43,8 @@ circumstances.
    corimf.
 1. [all] [update] Run corimf-check to sanity check everything. This needs to be
    run in the git repo that you updated ( for example 'cordova-ios').
-1. [all] [update] Run corimf-tag to create a new "u" tag on the branch
+1. [all] [update] Run corimf-tag to create a new "u" tag on the branch.
+   This will also check out each repo on the desired branch.
 1. [all] For versions 3.1.0esr and above, run corimf-show-plugin-versions to
    verify that the present versions of the plugins are what is desired (match
    what the platforms were tested against by the community) (also compare to
@@ -53,6 +54,7 @@ circumstances.
      files that have changed since the previous drop.
      NOTE: IBM-MODIFICATIONS.txt file does not exist until someone creates it
      at the first update to the repo
+   - Then upload this content to GSA (in the 'src' dir)
 1. For versions before 3.4.0, run the platform build scripts to build a snapshot
    with object code.
    - corimf-build-android.js (preferred) (see below)
