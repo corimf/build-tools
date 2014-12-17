@@ -67,7 +67,7 @@ test -d $PLATFORM_REPO
 
 echo "Checking major version number..."
 MAJOR=`echo $BRANCH | cut -f1 -d.`
-test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 4
 
 if [ "$MAJOR" -ge 3 ]
 then
@@ -169,6 +169,15 @@ do
         NEW_REPO=0
         DIFF=`git diff --numstat $PREV_TAG $NEW_TAG`
     fi
+    if [ -z "$DIFF" ]
+    then
+        DIFF="(no differences detected)"
+    fi
+    LOG=`git log --pretty=oneline --abbrev-commit $PREV_TAG..$NEW_TAG`
+    if [ -z "$LOG" ]
+    then
+        LOG="(no log detected)"
+    fi
     if [ -f IBM-MODIFICATIONS.txt ]
     then
         MODIFICATIONS=`git diff $PREV_TAG $NEW_TAG IBM-MODIFICATIONS.txt`
@@ -197,13 +206,18 @@ Git Hashes:
 IBM Modifications:
 $MODIFICATIONS
 
-Diff Stats (lines added/deleted/filename):
+Diff Stats (lines added/deleted/filename) between $PREV_TAG and $NEW_TAG:
 $DIFF
+
+Commit Log (hash + comment) between $PREV_TAG and $NEW_TAG:
+$LOG
+
 ============================================================================
 EOM
     unset EXPECTED
     unset LOCAL
     unset DIFF
+    unset LOG
     unset MODIFICATIONS
     unset LOCAL_BRANCH
     popd
