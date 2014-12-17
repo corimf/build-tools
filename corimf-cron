@@ -73,7 +73,7 @@ test -d $PLATFORM_REPO
 
 echo "Checking major version number..."
 MAJOR=`echo $BRANCH | cut -f1 -d.`
-test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 4
 
 if [ "$MAJOR" -ge 3 ]
 then
