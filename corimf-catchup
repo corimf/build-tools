@@ -64,7 +64,7 @@ test -d $PLATFORM_REPO
 
 echo "Checking major version number..."
 MAJOR=`echo $BRANCH | cut -f1 -d.`
-test "$MAJOR" -ge 2 -a "$MAJOR" -le 3
+test "$MAJOR" -ge 2 -a "$MAJOR" -le 4
 
 if [ "$MAJOR" -ge 3 ]
 then
@@ -92,6 +92,14 @@ for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
     git remote | grep $REMOTE_ORIGIN
+    popd
+done
+
+echo "Updating tags so we can checkout new branches..."
+for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
+do
+    pushd $DIR
+    git fetch --tags $REMOTE_ORIGIN
     popd
 done
 
