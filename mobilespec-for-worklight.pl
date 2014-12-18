@@ -5,10 +5,43 @@ use warnings;
 use lib 'build-tools/perllib';
 use HTML::TreeBuilder;
 use HTML::Element;
-use File::Copy::Recursive qw(dircopy);
+use File::Copy::Recursive qw(dircopy fcopy);
 use File::Find::Rule;
 use File::Copy;
 use File::Path;
+use JSON;
+
+# takes in argument of file to be changed
+sub changeCordovajsPath {
+    my $file = $_[0];
+    open(IN, $file) || die $!;
+    my @lines = <IN>;
+    close IN;
+    open(OUT, ">$_[0]") || die $!;
+    foreach my $line (@lines)
+    {
+        $line =~ s/cordova.js/worklight\/cordova.js/g;
+        print OUT $line;
+    }
+    close OUT;
+}
+
+# prepend the necessary cordova.define()...
+# takes in argument of file to be changed and module id
+sub prependDefine {
+    open (IN, $_[0]) || die $!;
+    my @lines = <IN>;
+    close IN;
+    open(OUT, ">$_[0]") || die $!;
+    print OUT "cordova.define(\"$_[1]\", function(require, exports, module) {";
+    foreach my $line (@lines)
+    {
+        print OUT $line;
+    }
+    print OUT "});";
+    close OUT;
+}
+
 
 my $numArgs = $#ARGV + 1;
 if ($numArgs != 1)
@@ -17,98 +50,194 @@ if ($numArgs != 1)
     exit;
 }
 
-my $mainjs;
-if ($ARGV[0] < 3.0)
-{
-    $mainjs = "Mobilespec.js";
-}
-else
-{
-    $mainjs = "main.js";
-}
-
-
-# copy mobilespec www files into new directory
-my $source = "cordova-mobile-spec";
 my $destination = "mobilespec-for-worklight";
-dircopy($source, $destination);
 
-
-
-# parse main html page and edit
-my $root = HTML::TreeBuilder->new;
-$root->parse_file("$destination/index.html") || die $!;
-
-# delete cordova-incl script tag
-if ($ARGV[0] >= 3.0)
+# old mobilespec
+if ($ARGV[0] < 3.6)
 {
-    my $script_tag = $root->look_down('_tag', 'script', 'src', 'cordova-incl.js');
-    $script_tag->delete;
-}
-
-# add necessary script tags from WL
-my $html_body = $root->find_by_tag_name('body');
-my $script1 = HTML::Element->new('script', 'src' => 'js/initOptions.js');
-my $script2 = HTML::Element->new('script', 'src' => "js/$mainjs");
-my $script3 = HTML::Element->new('script', 'src' => 'js/messages.js');
-$html_body->push_content($script1);
-$html_body->push_content($script2);
-$html_body->push_content($script3);
-
-# output changes to file
-open(OUT, ">$destination/index.html") || die $!;
-print OUT $root->as_HTML;
-close(OUT);
-$root->delete;
-
-
-
-if ($ARGV[0] >= 3.0)
-{
-    # change path for cordova.js in cordova-incl.js
-    my $file = "$destination/cordova-incl.js";
-    open(IN, $file) || die $!;
-    my @lines = <IN>;
-    close IN;
-    open(OUT, ">$destination/cordova-incl.js") || die $!;
-    foreach my $line (@lines)
+    my $mainjs;
+    if ($ARGV[0] < 3.0)
     {
-        $line =~ s/cordova.js/worklight\/cordova.js/g;
-        print OUT $line;
+        $mainjs = "Mobilespec.js";
     }
-    close OUT;
-}
-else
-{
-    # add wlclient/js/cordova.js path in child html pages
-    my @files = File::Find::Rule->file()
-                                ->name("*.html")
-                                ->in($destination);
-
-    foreach my $file (@files)
+    else
     {
-        if (!($file eq "$destination/index.html"))
+        $mainjs = "main.js";
+    }
+
+
+    # copy mobilespec www files into new directory
+    my $source = "cordova-mobile-spec";
+    dircopy($source, $destination);
+
+
+
+    # parse main html page and edit
+    my $root = HTML::TreeBuilder->new;
+    $root->parse_file("$destination/index.html") || die $!;
+
+    # delete cordova-incl script tag
+    if ($ARGV[0] >= 3.0)
+    {
+        my $script_tag = $root->look_down('_tag', 'script', 'src', 'cordova-incl.js');
+        $script_tag->delete;
+    }
+
+    # add necessary script tags from WL
+    my $html_body = $root->find_by_tag_name('body');
+    my $script1 = HTML::Element->new('script', 'src' => 'js/initOptions.js');
+    my $script2 = HTML::Element->new('script', 'src' => "js/$mainjs");
+    my $script3 = HTML::Element->new('script', 'src' => 'js/messages.js');
+    $html_body->push_content($script1);
+    $html_body->push_content($script2);
+    $html_body->push_content($script3);
+
+    # output changes to file
+    open(OUT, ">$destination/index.html") || die $!;
+    print OUT $root->as_HTML;
+    close(OUT);
+    $root->delete;
+
+
+
+    if ($ARGV[0] >= 3.0)
+    {
+        changeCordovajsPath("$destination/cordova-incl.js");
+    }
+    else
+    {
+        # add wlclient/js/cordova.js path in child html pages
+        my @files = File::Find::Rule->file()
+                                    ->name("*.html")
+                                    ->in($destination);
+
+        foreach my $file (@files)
         {
-            open (IN, $file) || die $!;
-            my @lines = <IN>;
-            close IN;
-            open(OUT, ">$file") || die $!;
-            foreach my $line (@lines)
+            if (!($file eq "$destination/index.html"))
             {
-                print OUT $line;
-                my $temp = $line;
-                $line =~ s/cordova.js/wlclient\/js\/cordova.js/g;
-                if (!($temp eq $line))
+                open (IN, $file) || die $!;
+                my @lines = <IN>;
+                close IN;
+                open(OUT, ">$file") || die $!;
+                foreach my $line (@lines)
                 {
                     print OUT $line;
+                    my $temp = $line;
+                    $line =~ s/cordova.js/wlclient\/js\/cordova.js/g;
+                    if (!($temp eq $line))
+                    {
+                        print OUT $line;
+                    }
                 }
+                close OUT;
             }
-            close OUT;
+        }
+
+        #rename the index.html file to Mobilespec.html
+        move("$destination/index.html", "$destination/Mobilespec.html");
+    }
+
+    rmtree([ "$destination/createmobilespec" ]);
+}
+
+
+
+# new plugin test framework
+else
+{
+    my @plugins = ("battery-status", "camera", "contacts", "device", "device-motion", "device-orientation", "dialogs", "file", "file-transfer", "geolocation", "globalization", "inappbrowser", "media", "media-capture", "network-information", "splashscreen", "statusbar", "vibration");
+    my @pluginInfo = ();
+
+    # copy mobilespec www files
+    dircopy("cordova-mobile-spec/www", "$destination/common");
+
+    # copy plugin-test-framework assets and plugin-inappbrowser/tests/resources
+    dircopy("cordova-plugin-test-framework/www/assets", "$destination/common/cdvtests") || die $!;
+    dircopy("cordova-plugin-inappbrowser/tests/resources", "$destination/common/cdvtests/iab-resources") || die $!;
+
+    # change path for cordova.js in cordova-incl.js and cdvtests/index.html
+    changeCordovajsPath("$destination/common/cordova-incl.js");
+    changeCordovajsPath("$destination/common/cdvtests/index.html");
+
+
+    # parse main html page and edit
+    my $root = HTML::TreeBuilder->new;
+    $root->parse_file("$destination/common/index.html") || die $!;
+
+    # delete cordova-incl script tag
+    my $script_tag = $root->look_down('_tag', 'script', 'src', 'cordova-incl.js');
+    $script_tag->delete;
+
+    # add necessary script tags from WL
+    my $html_body = $root->find_by_tag_name('body');
+    my $script1 = HTML::Element->new('script', 'src' => 'js/initOptions.js');
+    my $script2 = HTML::Element->new('script', 'src' => "js/main.js");
+    my $script3 = HTML::Element->new('script', 'src' => 'js/messages.js');
+    $html_body->push_content($script1);
+    $html_body->push_content($script2);
+    $html_body->push_content($script3);
+
+    # output changes to file
+    open(OUT, ">$destination/common/index.html") || die $!;
+    print OUT $root->as_HTML;
+    close(OUT);
+    $root->delete;
+
+
+    # adding test plugins to worklight/plugins and worklight/cordova_plugins.js
+    foreach my $plugin (@plugins)
+    {
+        my $src = "cordova-plugin-$plugin/tests/tests.js";
+        my $dest = "$destination/worklight/plugins/org.apache.cordova.$plugin.tests/tests.js";
+        my $id = "org.apache.cordova.$plugin.tests.tests";
+        if (-e $src)
+        {
+            # copy the tests.js file
+            fcopy($src, $dest) || die $!;
+            
+            # prepend the necessary cordova.define()...
+            prependDefine($dest, $id);
+
+            # create json object for registering in cordova_plugins.js
+            my %pluginInfo = ('file'=>"plugins/org.apache.cordova.$plugin.tests/tests.js", 'id'=>$id);
+            my $jsonObj = encode_json \%pluginInfo;
+            push(@pluginInfo, $jsonObj);
         }
     }
 
-    #rename the index.html file to Mobilespec.html
-    move("$destination/index.html", "$destination/Mobilespec.html");
-}
+    # add in plugin test framework
+    my @files = ("jasmine_helpers", "main", "medic", "tests");
+    foreach my $file (@files)
+    {
+        my $src = "cordova-plugin-test-framework/www/$file.js";
+        my $dest = "$destination/worklight/plugins/org.apache.cordova.test-framework/www/$file.js";
+        my $id;
 
-rmtree([ "$destination/createmobilespec" ]);
+        fcopy($src, $dest) || die $!;
+
+        if ($file eq "tests")
+        {
+            $id = "org.apache.cordova.test-framework.cdv$file";
+        }
+        else
+        {
+            $id = "org.apache.cordova.test-framework.$file";
+        }
+
+        # prepend the necessary cordova.define()...
+        prependDefine($dest, $id);
+
+        # create json object for registering in cordova_plugins.js
+        my %pluginInfo = ('file'=>"plugins/org.apache.cordova.test-framework/www/$file.js", 'id'=>$id);
+        my $jsonObj = encode_json \%pluginInfo;
+        push(@pluginInfo, $jsonObj);
+    }
+
+    # write out plugin info to cordova_plugins.js
+    open(OUT, ">$destination/worklight/cordova_plugins.js") || die $!;
+    foreach my $obj (@pluginInfo)
+    {
+        print OUT "$obj,\n";
+    }
+    close OUT;
+}

@@ -104,7 +104,16 @@ runtime sample projects on [GSA](https://rtpgsa.ibm.com/projects/c/cordova/cordo
 
 To get mobilespec running inside a Worklight project, follow these steps:
 
+## Old Mobilespec (< 3.6)
 1. Ensure you have the cordova-mobile-spec repo cloned and checked out at the version you need.
 1. Run "perl build-tools/mobilespec-for-worklight.pl <cordova version>", i.e. perl build-tools/mobilespec-for-worklight.pl 3.4
 1. A directory 'mobilespec-for-worklight' will be created. Copy all of the files from that directory into the 'common' directory in your Worklight project. Allow the necessary files to be overwritten.
 1. Copy the whitelist from mobilespec's config.xml to the config.xml in your Worklight project located in yourProject -> apps -> yourProject -> whatever platform -> native
+
+## New Plugin Test Framework (3.6 >=)
+1. Ensure you have cordova-mobile-spec, cordova-plugin-test-framework, and the plugin repos checked out at the version you need.
+1. Run "perl build-tools/mobilespec-for-worklight.pl <cordova version>", i.e. perl build-tools/mobilespec-for-worklight.pl 3.6
+1. A directory 'mobilespec-for-worklight' will be created.
+1. Copy all of the files from mobilespec-for-worklight/common into the 'common' directory in your Worklight project. Allow the necessary files to be overwritten.
+1. Copy all of the directories in mobilespec-for-worklight/worklight/plugins into the www/worklight/plugins directory in your native Worklight project. NOTE: You may need to change this directory to read-write in order to do this
+1. Copy the JSON objects in mobilespec-for-worklight/worklight/cordova_plugins.js into the www/worklight/cordova_plugins.js file (in your native Worklight project) at the end of the plugins list that is already present. NOTE: You may need to change this file to read-write in order to do this
