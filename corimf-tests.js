@@ -47,7 +47,7 @@ function checkAboveGitRepo() {
 function checkMajorVersionNum() {
 	console.log('Checking major version number...');
 	var major = settings.BASE_BRANCH.split('.')[0];
-	reportStatus((major >= 2) && (major <= 3));
+	reportStatus((major >= 2) && (major <= 4));
 	console.log('major: ' + major);
 	if (major >= 3) {
 		console.log('Checking that the plugin count is ' + settings.PLUGIN_COUNT);

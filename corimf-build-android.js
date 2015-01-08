@@ -56,7 +56,7 @@ var AndroidPreBuildSpecifics = function () {
     var VERSION = (shelljs.exec('javac -version 2>&1 | cut -f2 -d.', {
             silent : true
         }).output).replace(/(\r\n|\n|\r)/gm, "");
-    if (VERSION >= 5 && VERSION < 7) {
+    if (VERSION >= 5) {
         console.log("Java version " + VERSION + " fully compatible");
         if (settings.BRANCH == "2.6.0esr") {
             console.log("Updating platform to use API 17...");
@@ -135,15 +135,14 @@ AndroidBuildSpecifics = function (DPO) {
     tests.reportStatus(shelljs.exec('ant debug', {
             silent : true
         }).code == 0);
-
-        if (majorBranchNum >= 3.0)
-        {
-            // capture the plugins in a jar for Worklight as a convenience
+    
+    // capture the plugins in a jar for Worklight as a convenience
+        if (majorBranchNum >= 3.0) {
             tests.reportStatus(shelljs.exec('jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova', {
                     silent : true
                 }).code == 0);
         }
-     }
+    }
     shelljs.cd('..');
     if (!settings.PROJECT_ONLY) {
         console.log("Creating snapshot content in " + DPO.SNAPSHOT_DIR);

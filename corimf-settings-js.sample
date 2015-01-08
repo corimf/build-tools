@@ -28,27 +28,27 @@
 var PLATFORM_REPO = 'cordova-wp8',
 
 	// set to false if you want to build entire deliverable for India team, true for just default ESR project
-	PROJECT_ONLY = false,
-	// set to true if you also want to build mobilespec, false otherwise
-	MOBILESPEC = false,
-	// name of the git remote repository from "git remote -v"
+	PROJECT_ONLY = true,
+    // set to true if you also want to build mobilespec, false otherwise
+	MOBILESPEC = true,
+	// name of the git remote repository from "git remote -v", should be from corimf if ESR is desired
 	REMOTE_ORIGIN = 'origin',
-	
+
 	// name of the git branch that is being worked on (should end in "esr")
-	BRANCH = '2.3.0esr',
-	
+	BRANCH = '4.1.2esr',
+
 	// name of the new git tag for this new addition
-	NEW_TAG = 'WL5060u2',
-	
+	NEW_TAG = 'WL7000rc2',
+
 	// name of the git tag which already exists immediately previous
-	PREV_TAG = 'WL5060u1',
-	
+	PREV_TAG = 'WL7000rc1',
+
 	// when adding plugins to a platform, name of a plugin to skip (i.e., "cordova-geolocation" for Android)
-	SKIP_PLUGIN = {},
-	
+	SKIP_PLUGIN = [],
+
 	// the "git remote -v" name for the Apache read-only repos on github.com
-	MASTER_ORIGIN = 'readonly',
-	
+	MASTER_ORIGIN = 'origin',
+
 	// this is a new branch to pull from MASTER_ORIGIN. You are not expected
 	// to have this already checked out, or for it to already exist locally.
 	// Should be in the form "3.4.x" or "master". Using "master" will get you
@@ -56,22 +56,26 @@ var PLATFORM_REPO = 'cordova-wp8',
 	// plugins. Yes, this does kind of assume that $BASE_BRANCH is the latest
 	// production branch for the platforms because it gets master for the plugins
 	// and other.
-	BASE_BRANCH = '3.4.x',
-	
+	BASE_BRANCH = '4.1.x',
+
 	// the "git remote -v" name for the read-write Apache repos on git-wip-us.a.o.
 	RW_ORIGIN = 'readwrite',
-	
+
 	PLUGMAN_REPO = 'cordova-plugman',
+
 	
-	PLUGIN_COUNT = 18,
-	
-	PLUGINS = ['cordova-plugin-battery-status', 'cordova-plugin-camera', 'cordova-plugin-console', 'cordova-plugin-contacts', 'cordova-plugin-device', 'cordova-plugin-device-motion', 'cordova-plugin-device-orientation', 'cordova-plugin-dialogs', 'cordova-plugin-file', 'cordova-plugin-file-transfer', 'cordova-plugin-geolocation', 'cordova-plugin-globalization', 'cordova-plugin-inappbrowser', 'cordova-plugin-media', 'cordova-plugin-media-capture', 'cordova-plugin-network-information', 'cordova-plugin-splashscreen', 'cordova-plugin-vibration'],
-	PLATFORM_REPOS = ['cordova-android', 'cordova-blackberry', 'cordova-ios', 'cordova-windows', 'cordova-wp8', 'cordova-js'],
+    //Cordova 3.4.0 and below
+    //PLUGIN_COUNT = 18,
+	//PLUGINS = ['cordova-plugin-battery-status', 'cordova-plugin-camera', 'cordova-plugin-console', 'cordova-plugin-contacts', 'cordova-plugin-device', 'cordova-plugin-device-motion', 'cordova-plugin-device-orientation', 'cordova-plugin-dialogs', 'cordova-plugin-file', 'cordova-plugin-file-transfer', 'cordova-plugin-geolocation', 'cordova-plugin-globalization', 'cordova-plugin-inappbrowser', 'cordova-plugin-media', 'cordova-plugin-media-capture', 'cordova-plugin-network-information', 'cordova-plugin-splashscreen', 'cordova-plugin-vibration'],
+    //OTHER_REPOS = ['cordova-blackberry-plugins', 'cordova-cli', 'cordova-plugman'];
+    //Cordova 3.6.1 with Plugin StatusBar and Cordova-lib for 4.1.2
+    PLUGIN_COUNT = 19,
+    PLUGINS = ['cordova-plugin-battery-status', 'cordova-plugin-camera', 'cordova-plugin-console', 'cordova-plugin-contacts', 'cordova-plugin-device', 'cordova-plugin-device-motion', 'cordova-plugin-device-orientation', 'cordova-plugin-dialogs', 'cordova-plugin-file', 'cordova-plugin-file-transfer', 'cordova-plugin-geolocation', 'cordova-plugin-globalization', 'cordova-plugin-inappbrowser', 'cordova-plugin-media', 'cordova-plugin-media-capture', 'cordova-plugin-network-information', 'cordova-plugin-splashscreen', 'cordova-plugin-statusbar', 'cordova-plugin-vibration'],
+    PLATFORM_REPOS = ['cordova-android', 'cordova-blackberry', 'cordova-ios', 'cordova-windows', 'cordova-wp8', 'cordova-js'],
 	OTHER_REPOS = ['cordova-blackberry-plugins', 'cordova-cli', 'cordova-plugman', 'cordova-lib'];
-	
+
 exports.PLATFORM_REPO = PLATFORM_REPO;
 exports.PROJECT_ONLY = PROJECT_ONLY;
-exports.MOBILESPEC = MOBILESPEC;
 exports.REMOTE_ORIGIN = REMOTE_ORIGIN;
 exports.BRANCH = BRANCH;
 exports.NEW_TAG = NEW_TAG;
@@ -83,5 +87,6 @@ exports.RW_ORIGIN = RW_ORIGIN;
 exports.PLUGMAN_REPO = PLUGMAN_REPO;
 exports.PLUGIN_COUNT = PLUGIN_COUNT;
 exports.PLUGINS = PLUGINS;
-exports.PLATFORM_REPOS = exports.PLATFORM_REPOS;
+exports.PLATFORM_REPOS = PLATFORM_REPOS;
 exports.OTHER_REPOS = OTHER_REPOS;
+exports.MOBILESPEC = MOBILESPEC;

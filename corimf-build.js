@@ -205,7 +205,7 @@ var BuildProject = function(platformSpecificCode) {
     var PROJECT_DIR = 'example-' + platform + '-' + settings.NEW_TAG;
     var SNAPSHOT_DIR = 'forgsa-' + platform + '-' + settings.NEW_TAG;
     var MOBILESPEC_DIR = 'mobilespec-' + platform + '-' + settings.NEW_TAG;
-    var PROJECT_NAME = platform === "wp8" ? 'WPCordovaClassLib' : 'example';
+    var PROJECT_NAME = platform === "wp8" ? 'WPCordovaClassLib' : 'com.corimf.example';
     var pathProject = pathCorimf + path.sep + PROJECT_DIR;
     var pathSnapshot = tmpDir + path.sep + SNAPSHOT_DIR;
 
@@ -217,8 +217,8 @@ var BuildProject = function(platformSpecificCode) {
         reportStatus(!shelljs.test('-d', tmpDir + path.sep + SNAPSHOT_DIR));
     }
 
-    var execPath = platform === "wp8" ? path.join(pathCorimf, 'cordova-' + platform, 'wp8', 'bin', 'create') : path.join(pathCorimf, 'cordova-' + platform, 'bin', 'create');
-    var cmd = execPath + ' ' + PROJECT_DIR + ' '+ 'com.corimf.'+PROJECT_NAME +' ' + PROJECT_NAME;
+    var execPath = platform === "wp8" ? ( Number(settings.BRANCH.substring(0,3)) > 3.6 ? path.join(pathCorimf, 'cordova-' + platform, 'bin', 'create') : path.join(pathCorimf, 'cordova-' + platform, 'wp8', 'bin', 'create')) : path.join(pathCorimf, 'cordova-' + platform, 'bin', 'create');
+    var cmd = execPath + ' ' + PROJECT_DIR + ' '+PROJECT_NAME +' ' + PROJECT_NAME;
     console.log('Creating a new ' + platform.toUpperCase() + ' Project...');
     console.log('Running: \n' + cmd);
     tests.reportStatus(shelljs.exec(cmd, {silent : false}).code == 0);
@@ -311,7 +311,7 @@ var getAllFiles = function (dirPath, fileTree, basePath) {
 
 function RemoveTempDir() {
     if(tmpDir) {
-        shelljs.rm('-rf', tmpDir)
+        shelljs.rm('-rf', tmpDir);
         if(shelljs.test('-d', tmpDir))
             console.log("Error removing temporary directory '.temp'");
     }
