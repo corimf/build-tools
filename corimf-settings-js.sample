@@ -57,6 +57,8 @@ var PLATFORM_REPO = 'cordova-wp8',
 	// production branch for the platforms because it gets master for the plugins
 	// and other.
 	BASE_BRANCH = '4.1.x',
+    
+    REMOVE_TMP_ONERROR=false,
 
 	// the "git remote -v" name for the read-write Apache repos on git-wip-us.a.o.
 	RW_ORIGIN = 'readwrite',
