@@ -37,7 +37,7 @@ try {
     settings = require('./corimf-settings.js'),
     path = require('path'),
     shelljs = require('shelljs');
-    fs = require ('fs');
+    fs = require('fs');
 } catch (e) {
     console.error('Missing module. Please run "npm install" from this directory:\n\t' +
         path.dirname(__dirname));
@@ -68,16 +68,16 @@ var AndroidPreBuildSpecifics = function () {
             /*
             console.log("Checking that API 17 is the most recent SDK installed...");
             var API_LEVEL = tests.reportStatus(shelljs.exec("`android list targets | grep 'API level:' | tail -n1 | cut -f2 -d: | tr -d ' '", {
-                        silent : true
-                    }).code == 0);
+            silent : true
+            }).code == 0);
             if (API_LEVEL != "17") {
-                console.log("Sorry, you need to uninstall the SDK for API $API_LEVEL");
-                console.log("  or temporarily disable it by moving it to another directory, because it is");
-                console.log("  preventing API 17 from being the most recent API installed.");
-                console.log('  (i.e., move $SDK_HOME/sdk/platforms/android-18 $SDK_HOME/sdk/disabled-platforms/android-18 and make sure you have "Android SDK Build Tools" for v17 installed.');
-                process.exit(code == 1);
+            console.log("Sorry, you need to uninstall the SDK for API $API_LEVEL");
+            console.log("  or temporarily disable it by moving it to another directory, because it is");
+            console.log("  preventing API 17 from being the most recent API installed.");
+            console.log('  (i.e., move $SDK_HOME/sdk/platforms/android-18 $SDK_HOME/sdk/disabled-platforms/android-18 and make sure you have "Android SDK Build Tools" for v17 installed.');
+            process.exit(code == 1);
             }
-            */
+             */
         }
 
         console.log("Rebuilding the cordova.jar...");
@@ -88,11 +88,13 @@ var AndroidPreBuildSpecifics = function () {
         tests.reportStatus(shelljs.exec('ant clean', {
                 silent : false
             }).code === 0);
-        var status = shelljs.exec('ant jar', {silent : false});
+        var status = shelljs.exec('ant jar', {
+                silent : false
+            });
         tests.reportStatus(status.code == 0);
         shelljs.cd('..');
         shelljs.cd('..');
-        
+
     } else {
         console.log("Java version " + VERSION + " not compatible");
         shelljs.exit(2);
@@ -102,20 +104,17 @@ var AndroidPreBuildSpecifics = function () {
 
 // Callback function that is called from with corimf-build.js BuildProject()
 AndroidBuildSpecifics = function (DPO) {
-    var majorBranchNum = Number(settings.BRANCH.substring(0,3));
+    var majorBranchNum = Number(settings.BRANCH.substring(0, 3));
 
     //build mobilespec project
     if (settings.MOBILESPEC) {
         console.log("Building the project (apk) for mobilespec...");
         shelljs.cd(DPO.MOBILESPEC_DIR);
-        if (majorBranchNum > 3.1)
-        {
-            tests.reportStatus(shelljs.exec(path.join('cordova','build'), {
+        if (majorBranchNum > 3.1) {
+            tests.reportStatus(shelljs.exec(path.join('cordova', 'build'), {
                     silent : true
                 }).code == 0);
-        }
-        else
-        {
+        } else {
             tests.reportStatus(shelljs.exec('ant debug', {
                     silent : true
                 }).code == 0);
@@ -126,17 +125,16 @@ AndroidBuildSpecifics = function (DPO) {
     //build example project
     console.log("Building the project (apk)...");
     shelljs.cd(DPO.PROJECT_DIR);
-    if(majorBranchNum > 3.1 && settings.PROJECT_ONLY) {
-        tests.reportStatus(shelljs.exec(path.join('cordova','build'), {
-            silent : true
-        }).code == 0);
-    }
-    else{
-    tests.reportStatus(shelljs.exec('ant debug', {
-            silent : true
-        }).code == 0);
-    
-    // capture the plugins in a jar for Worklight as a convenience
+    if (majorBranchNum > 3.1 && settings.PROJECT_ONLY) {
+        tests.reportStatus(shelljs.exec(path.join('cordova', 'build'), {
+                silent : true
+            }).code == 0);
+    } else {
+        tests.reportStatus(shelljs.exec('ant debug', {
+                silent : true
+            }).code == 0);
+
+        // capture the plugins in a jar for Worklight as a convenience
         if (majorBranchNum >= 3.0) {
             tests.reportStatus(shelljs.exec('jar cvf cordova_plugins.jar -C bin/classes org/apache/cordova', {
                     silent : true
@@ -148,17 +146,17 @@ AndroidBuildSpecifics = function (DPO) {
         console.log("Creating snapshot content in " + DPO.SNAPSHOT_DIR);
         shelljs.mkdir(DPO.SNAPSHOT_DIR);
         // get the original platform project. Not really needed perhaps.
-        tests.reportStatus(shelljs.cp('-Rf', path.join('cordova-android', 'framework') , path.join(DPO.SNAPSHOT_DIR, 'framework')));
-        if (shelljs.test('-d', path.join(DPO.SNAPSHOT_DIR,'framework','test'))) {
+        tests.reportStatus(shelljs.cp('-Rf', path.join('cordova-android', 'framework'), path.join(DPO.SNAPSHOT_DIR, 'framework')));
+        if (shelljs.test('-d', path.join(DPO.SNAPSHOT_DIR, 'framework', 'test'))) {
             // don't need test artifacts
-            tests.reportStatus(shelljs.rm('-Rf', path.join(DPO.SNAPSHOT_DIR, 'framework','test')));
+            tests.reportStatus(shelljs.rm('-Rf', path.join(DPO.SNAPSHOT_DIR, 'framework', 'test')));
         }
 
         // get the example project, which includes cordova.jar and cordova.js.
-        tests.reportStatus(shelljs.cp('-Rf',DPO.PROJECT_DIR , path.join(DPO.SNAPSHOT_DIR, 'example')));
-        if (shelljs.test('-d', path.join(DPO.SNAPSHOT_DIR,'example','assets','www','spec'))) {
+        tests.reportStatus(shelljs.cp('-Rf', DPO.PROJECT_DIR, path.join(DPO.SNAPSHOT_DIR, 'example')));
+        if (shelljs.test('-d', path.join(DPO.SNAPSHOT_DIR, 'example', 'assets', 'www', 'spec'))) {
             // don't need test artifacts
-            tests.reportStatus(shelljs.rm('-Rf', path.join(DPO.SNAPSHOT_DIR, 'example','assets','www','spec')));
+            tests.reportStatus(shelljs.rm('-Rf', path.join(DPO.SNAPSHOT_DIR, 'example', 'assets', 'www', 'spec')));
         }
     }
     return true;
