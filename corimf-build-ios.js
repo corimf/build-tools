@@ -80,5 +80,5 @@ var IOSBuildSpecifics = function(DPO) {
 
 function CopyRetStatus() {
     if(shelljs.error())
-        build.reportStatus(0, 'copy command failed');
+        tests.reportStatus(0, 'copy command failed');
 }
