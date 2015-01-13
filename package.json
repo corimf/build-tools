@@ -10,6 +10,7 @@
   "dependencies": {
     "shelljs": "0.2.6",
     "temporary": "0.0.8",
-    "elementtree": "0.1.6"},
+    "elementtree": "0.1.6",
+    "colors":"0.6.2"},
   "private": true
 }
