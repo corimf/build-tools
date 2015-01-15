@@ -9,6 +9,7 @@ use File::Copy::Recursive qw(dircopy fcopy);
 use File::Find::Rule;
 use File::Copy;
 use File::Path;
+use File::Spec::Functions;
 use JSON;
 
 # takes in argument of file to be changed
@@ -74,7 +75,7 @@ if ($ARGV[0] < 3.6)
 
     # parse main html page and edit
     my $root = HTML::TreeBuilder->new;
-    $root->parse_file("$destination/index.html") || die $!;
+    $root->parse_file(catfile($destination, 'index.html')) || die $!;
 
     # delete cordova-incl script tag
     if ($ARGV[0] >= 3.0)
@@ -93,7 +94,7 @@ if ($ARGV[0] < 3.6)
     $html_body->push_content($script3);
 
     # output changes to file
-    open(OUT, ">$destination/index.html") || die $!;
+    open(OUT, ">${\catfile($destination, 'index.html')}") || die $!;
     print OUT $root->as_HTML;
     close(OUT);
     $root->delete;
@@ -102,7 +103,7 @@ if ($ARGV[0] < 3.6)
 
     if ($ARGV[0] >= 3.0)
     {
-        changeCordovajsPath("$destination/cordova-incl.js");
+        changeCordovajsPath(catfile($destination, 'cordova-incl.js'));
     }
     else
     {
@@ -113,7 +114,7 @@ if ($ARGV[0] < 3.6)
 
         foreach my $file (@files)
         {
-            if (!($file eq "$destination/index.html"))
+            if (!($file eq catfile($destination, 'index.html')))
             {
                 open (IN, $file) || die $!;
                 my @lines = <IN>;
@@ -134,10 +135,10 @@ if ($ARGV[0] < 3.6)
         }
 
         #rename the index.html file to Mobilespec.html
-        move("$destination/index.html", "$destination/Mobilespec.html");
+        move(catfile($destination, 'index.html'), catfile($destination, 'Mobilespec.html'));
     }
 
-    rmtree([ "$destination/createmobilespec" ]);
+    rmtree([ catfile($destination, 'createmobilespec') ]);
 }
 
 
@@ -149,20 +150,20 @@ else
     my @pluginInfo = ();
 
     # copy mobilespec www files
-    dircopy("cordova-mobile-spec/www", "$destination/common");
+    dircopy(catfile('cordova-mobile-spec', 'www'), catfile($destination, 'common'));
 
     # copy plugin-test-framework assets and plugin-inappbrowser/tests/resources
-    dircopy("cordova-plugin-test-framework/www/assets", "$destination/common/cdvtests") || die $!;
-    dircopy("cordova-plugin-inappbrowser/tests/resources", "$destination/common/cdvtests/iab-resources") || die $!;
+    dircopy(catfile('cordova-plugin-test-framework', 'www', 'assets'), catfile($destination, 'common', 'cdvtests')) || die $!;
+    dircopy(catfile('cordova-plugin-inappbrowser', 'tests', 'resources'), catfile($destination, 'common', 'cdvtests', 'iab-resources')) || die $!;
 
     # change path for cordova.js in cordova-incl.js and cdvtests/index.html
-    changeCordovajsPath("$destination/common/cordova-incl.js");
-    changeCordovajsPath("$destination/common/cdvtests/index.html");
+    changeCordovajsPath(catfile($destination, 'common', 'cordova-incl.js'));
+    changeCordovajsPath(catfile($destination, 'common', 'cdvtests', 'index.html'));
 
 
     # parse main html page and edit
     my $root = HTML::TreeBuilder->new;
-    $root->parse_file("$destination/common/index.html") || die $!;
+    $root->parse_file(catfile($destination, 'common', 'index.html')) || die $!;
 
     # delete cordova-incl script tag
     my $script_tag = $root->look_down('_tag', 'script', 'src', 'cordova-incl.js');
@@ -178,7 +179,7 @@ else
     $html_body->push_content($script3);
 
     # output changes to file
-    open(OUT, ">$destination/common/index.html") || die $!;
+    open(OUT, ">${\catfile($destination, 'common', 'index.html')}") || die $!;
     print OUT $root->as_HTML;
     close(OUT);
     $root->delete;
@@ -187,8 +188,8 @@ else
     # adding test plugins to worklight/plugins and worklight/cordova_plugins.js
     foreach my $plugin (@plugins)
     {
-        my $src = "cordova-plugin-$plugin/tests/tests.js";
-        my $dest = "$destination/worklight/plugins/org.apache.cordova.$plugin.tests/tests.js";
+        my $src = catfile("cordova-plugin-$plugin", 'tests', 'tests.js');
+        my $dest = catfile($destination, 'worklight', 'plugins', "org.apache.cordova.$plugin.tests", 'tests.js');
         my $id = "org.apache.cordova.$plugin.tests.tests";
         if (-e $src)
         {
@@ -209,8 +210,8 @@ else
     my @files = ("jasmine_helpers", "main", "medic", "tests");
     foreach my $file (@files)
     {
-        my $src = "cordova-plugin-test-framework/www/$file.js";
-        my $dest = "$destination/worklight/plugins/org.apache.cordova.test-framework/www/$file.js";
+        my $src = catfile('cordova-plugin-test-framework', 'www', "$file.js");
+        my $dest = catfile($destination, 'worklight', 'plugins', 'org.apache.cordova.test-framework', 'www', "$file.js");
         my $id;
 
         fcopy($src, $dest) || die $!;
@@ -234,7 +235,7 @@ else
     }
 
     # write out plugin info to cordova_plugins.js
-    open(OUT, ">$destination/worklight/cordova_plugins.js") || die $!;
+    open(OUT, ">${\catfile($destination, 'worklight', 'cordova_plugins.js')}") || die $!;
     foreach my $obj (@pluginInfo)
     {
         print OUT "$obj,\n";
