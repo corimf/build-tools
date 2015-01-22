@@ -44,7 +44,8 @@ circumstances.
 1. [all] [update] Run corimf-check to sanity check everything. This needs to be
    run in the git repo that you updated ( for example 'cordova-ios').
 1. [all] [update] Run corimf-tag to create a new "u" tag on the branch.
-   This will also check out each repo on the desired branch.
+   This will also check out each repo on the desired branch. It will create
+   and push only the tags that don't already exist.
 1. [all] For versions 3.1.0esr and above, run corimf-show-plugin-versions to
    verify that the present versions of the plugins are what is desired (match
    what the platforms were tested against by the community) (also compare to
