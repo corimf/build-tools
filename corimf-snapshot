@@ -27,6 +27,23 @@
 # You may need to have cordova-coho checked out at the WL6200 tag for this
 # script to work.
 
+# Checking that jq executable is present
+WHICH=$(which jq || true)
+if [ -z "$WHICH" ]
+then
+    echo "Error: Please install jq from http://stedolan.github.io/jq/"
+    echo "It is needed to parse json output."
+    exit 2
+fi
+# Checking that xmllint executable is present
+WHICH=$(which xmllint || true)
+if [ -z "$WHICH" ]
+then
+    echo "Error: Please install xmllint"
+    echo "It is needed to parse xml output."
+    exit 2
+fi
+
 if [ "$1" = "" ]
 then
     echo "Loading the settings from corimf-settings..."
@@ -97,6 +114,7 @@ echo "Checking that output directory $NEW_TAG does not already exist..."
 test ! -d $NEW_TAG
 mkdir $NEW_TAG
 
+echo "Creating zip of each repo..."
 for DIR in $PLATFORM_REPOS $PLUGINS $OTHER_REPOS
 do
     pushd $DIR
@@ -223,8 +241,48 @@ EOM
     popd
 done
 
+echo "Creating CORDOVA-VERSIONS.json..."
+cat << EOM >> $SAVE_DIR/$NEW_TAG/IBM-RELEASE-NOTES.txt
+
+Unable to determine if CORDOVA-VERSIONS.json is modified since it is a
+computed resource, so assume it has changed.
+
+============================================================================
+EOM
+# there are a couple exceptions where version numbers we need aren't a 1:1 map to repos
+OTHER_REPOS_VERSIONED=$OTHER_REPOS
+PLUGINS_VERSIONED=$PLUGINS
+BBPRESENT=$(echo "$OTHER_REPOS" | grep cordova-blackberry-plugins || true)
+if [ ! -z "$BBPRESENT" ]
+then
+    OTHER_REPOS_VERSIONED=$(echo "$OTHER_REPOS_VERSIONED" | sed -e 's/cordova-blackberry-plugins//')
+    PLUGINS_VERSIONED="$PLUGINS_VERSIONED cordova-blackberry-plugins/plugin/com.blackberry.utils cordova-blackberry-plugins/$PIMLIB"
+fi
+VERSIONS="{\n  \"INTERNAL_TAG\": \"$NEW_TAG\""
+for DIR in $OTHER_REPOS_VERSIONED $PLATFORM_REPOS
+do
+    if [ "$DIR" = "cordova-lib" ]
+    then
+        PACKAGE_JSON=$DIR/$DIR/package.json
+    else
+        PACKAGE_JSON=$DIR/package.json
+    fi
+    test -f $PACKAGE_JSON
+    VERSION=$(cat $PACKAGE_JSON | jq .version)
+    VERSIONS="${VERSIONS},\n  \"$DIR\": $VERSION"
+done
+for DIR in $PLUGINS_VERSIONED
+do
+    test -f $DIR/plugin.xml
+    VERSION=$(xmllint --xpath "//*[local-name()='plugin']/@version" $DIR/plugin.xml | cut -f2 -d=)
+    ID=$(xmllint --xpath "//*[local-name()='plugin']/@id" $DIR/plugin.xml | cut -f2 -d=)
+    VERSIONS="${VERSIONS},\n  ${ID}: $VERSION"
+done
+VERSIONS="${VERSIONS}\n}\n"
+echo "$VERSIONS" > $SAVE_DIR/$NEW_TAG/CORDOVA-VERSIONS.json
+
 echo "Creating zip file..."
-VERSION=`cat cordova-js/VERSION | tr -d '\n' | tr -d '\r'`
+VERSION=`cat cordova-cli/package.json | jq -r .version`
 test ! -z "$VERSION"
 zip -r cordova-$VERSION-$NEW_TAG.zip $NEW_TAG
 
