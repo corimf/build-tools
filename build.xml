@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+
+<!--
+Ant script to convert Cordova src zips to installation-ready layout
+Assumes you downloaded all of the src zip folders. 
+
+Check below that the property "version" has the version that you want to unzip
+
+Run: ant setup
+
+For new src zip folders, add to the unzip target below
+-->
+
+<project name="cordova_4.1" default="setup" basedir=".">
+	<!-- Name scheme -->
+	<property name="cordova" value="cordova-" />
+	<property name="cordovaPlugin" value="cordova-plugin-" />
+	
+	<!-- Change value of version to your current version-->
+	<property name="version" value="-WL7000rc3" />
+	
+	<!-- Destination folders -->
+	<property name="platforms" value="platforms" />
+	<property name="plugins" value="plugins" />
+	<property name="tools" value="." />
+	
+	<target name="setup">
+		<tstamp/>
+		<antcall target="npm"/>
+	</target>
+	
+	
+	<!-- Unzips folders -->
+	<target name="unzip">
+		<unzip src="${cordova}android${version}.zip" dest="${platforms}"/>
+		<unzip src="${cordova}blackberry${version}.zip" dest="${platforms}"/>
+		<unzip src="${cordova}blackberry-plugins${version}.zip" dest="${tools}"/>
+		<unzip src="${cordova}cli${version}.zip" dest="${tools}"/>
+		<unzip src="${cordova}ios${version}.zip" dest="${platforms}"/>
+		<unzip src="${cordova}js${version}.zip" dest="${tools}"/>
+		<unzip src="${cordova}lib${version}.zip" dest="${tools}"/>
+		<unzip src="${cordovaPlugin}battery-status${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}camera${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}console${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}contacts${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}device${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}device-motion${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}device-orientation${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}dialogs${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}file${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}file-transfer${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}geolocation${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}globalization${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}inappbrowser${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}media${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}media-capture${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}network-information${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}splashscreen${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}statusbar${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordovaPlugin}vibration${version}.zip" dest="${plugins}"/>
+		<unzip src="${cordova}plugman${version}.zip" dest="${tools}"/>
+		<unzip src="${cordova}windows${version}.zip" dest="${platforms}"/>
+		<unzip src="${cordova}wp8${version}.zip" dest="${platforms}"/>
+	</target>
+	
+	
+	<!-- Condition: if coho.zip is available, unzip -->
+	<target name="coho.unzip" depends="coho.check" if="coho.available">
+		<unzip src="${cordova}coho${version}.zip" dest="${tools}"/>
+	</target>
+	
+	
+	<!-- Condition: else, clone from git -->
+	<target name="coho.git" depends="coho.check" unless="coho.available">
+		<exec executable="cmd" dir="${basedir}" osfamily="windows" failonerror="false" failifexecutionfails="false">
+			<arg value="/c"/>
+			<arg value="git"/>
+			<arg value="clone"/>
+			<arg value="https://git-wip-us.apache.org/repos/asf/cordova-coho.git"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}" osfamily="unix" failonerror="true" failifexecutionfails="false">
+			<arg value="-c"/>
+			<arg value="git clone https://git-wip-us.apache.org/repos/asf/cordova-coho.git"/>
+		</exec>
+	</target>
+	
+	
+	<!-- Checks to see if coho.zip is available -->
+	<target name="coho.check">
+		<condition property="coho.available">
+			<available file="${cordova}coho${version}.zip"/>
+		</condition>
+	</target>
+	
+	
+	<!-- Sets up coho -->
+	<target name="coho.setup" depends="coho.unzip, coho.git">
+		<exec executable="cmd" dir="${basedir}/${cordova}coho" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="npm"/>
+            <arg value="install"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/${cordova}coho" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="npm install"/>
+		</exec>
+		<exec executable="cmd" dir="${basedir}/${cordova}coho" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="npm"/>
+            <arg value="link"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/${cordova}coho" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="npm link"/>
+		</exec>
+	</target>
+	
+	
+	<!-- Creates global links to dependences folders -->
+	<target name="link" depends="coho.setup, unzip">
+		<exec executable="cmd" dir="${basedir}/${cordova}coho" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="coho"/>
+            <arg value="npm-link"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/${cordova}coho" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="coho npm-link"/>
+		</exec>
+	</target>
+	
+	
+	<!-- Calls "npm install" inside the tooling folders -->
+	<target name="npm" depends="link">
+		<exec executable="cmd" dir="${basedir}/${cordova}cli" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="npm"/>
+            <arg value="install"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/${cordova}cli" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="npm install"/>
+		</exec>
+		<exec executable="cmd" dir="${basedir}/${cordova}js" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="npm"/>
+            <arg value="install"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/${cordova}js" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="npm install"/>
+		</exec>
+		<exec executable="cmd" dir="${basedir}/${cordova}lib/${cordova}lib" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="npm"/>
+            <arg value="install"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/${cordova}lib" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="npm install"/>
+		</exec>
+		<exec executable="cmd" dir="${basedir}/${cordova}plugman" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="npm"/>
+            <arg value="install"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/${cordova}plugman" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="npm install"/>
+		</exec>
+	</target>
+	
+	
+	<!-- Create Hello World App ***FOR ANDROID*** (Assumes you have the Android SDK set up already)-->
+	<!-- Run: ant helloworld-->
+	
+	<property name="current_platform" value="android" />
+	
+	<target name="helloworld">
+		<exec executable="cmd" dir="${basedir}" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="${basedir}/${cordova}cli/bin/cordova"/>
+            <arg value="create"/>
+			<arg value="helloworld"/>
+			<arg value="com.example.hello"/>
+			<arg value="HelloWorld"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="${basedir}/${cordova}cli/bin/cordova create helloworld com.example.hello HelloWorld"/>
+		</exec>
+		<exec executable="cmd" dir="${basedir}/helloworld" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="${basedir}/${cordova}cli/bin/cordova"/>
+            <arg value="platform"/>
+			<arg value="add"/>
+			<arg value="${current_platform}"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/helloworld" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="${basedir}/${cordova}cli/bin/cordova platform add ${current_platform}"/>
+		</exec>
+		<exec executable="cmd" dir="${basedir}/helloworld" osfamily="windows" failonerror="false" failifexecutionfails="false">
+            <arg value="/c"/>
+			<arg value="${basedir}/${cordova}cli/bin/cordova"/>
+            <arg value="run"/>
+			<arg value="${current_platform}"/>
+		</exec>
+		<exec executable="/bin/bash" dir="${basedir}/helloworld" osfamily="unix" failonerror="true" failifexecutionfails="false">
+            <arg value="-c"/>
+			<arg value="${basedir}/${cordova}cli/bin/cordova run ${current_platform}"/>
+		</exec>
+	</target>
+</project>
