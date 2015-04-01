@@ -76,4 +76,4 @@ PLUGMAN_REPO=cordova-plugman
 PLUGIN_COUNT=19
 PLUGINS="cordova-plugin-battery-status cordova-plugin-camera cordova-plugin-console cordova-plugin-contacts cordova-plugin-device cordova-plugin-device-motion cordova-plugin-device-orientation cordova-plugin-dialogs cordova-plugin-file cordova-plugin-file-transfer cordova-plugin-geolocation cordova-plugin-globalization cordova-plugin-inappbrowser cordova-plugin-media cordova-plugin-media-capture cordova-plugin-network-information cordova-plugin-splashscreen cordova-plugin-vibration cordova-plugin-statusbar"
 PLATFORM_REPOS="cordova-android cordova-blackberry cordova-ios cordova-windows cordova-wp8 cordova-js"
-OTHER_REPOS="cordova-blackberry-plugins cordova-cli cordova-plugman cordova-lib cordova-coho"
+OTHER_REPOS="cordova-blackberry-plugins cordova-cli cordova-plugman cordova-lib"
