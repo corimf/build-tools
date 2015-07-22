@@ -68,7 +68,7 @@ circumstances.
 
 ## Creating ESR helloworld and mobilespec runtime samples
 
-For the Cordova team, these scripts can be used to create runtime sample 
+For the Cordova team, these scripts can be used to create runtime sample
 projects to post to GSA for other teams to use when debugging issues.
 
 For the integration team and others, these scripts can be used to create both a
@@ -78,7 +78,7 @@ an issue in Cordova. As an alternative, you can simply download the posted
 runtime sample projects on [GSA](https://rtpgsa.ibm.com/projects/c/cordova/cordova-ESR-runtime-samples/).
 
 1. Create your own corimf-settings.js from the sample provided.
-   - Set PROJECT_ONLY and MOBILESPEC to true if you only want to 
+   - Set PROJECT_ONLY and MOBILESPEC to true if you only want to
    get the runtime sample projects.
    - Set BRANCH as the ESR branch you want to build from and
    NEW_TAG as the latest tag from that ESR branch, which can be
@@ -118,3 +118,21 @@ To get mobilespec running inside a Worklight project, follow these steps:
 1. Copy all of the files from mobilespec-for-worklight/common into the 'common' directory in your Worklight project. Allow the necessary files to be overwritten.
 1. Copy all of the directories in mobilespec-for-worklight/worklight/plugins into the www/worklight/plugins directory in your native Worklight project. NOTE: You may need to change this directory to read-write in order to do this
 1. Copy the JSON objects in mobilespec-for-worklight/worklight/cordova_plugins.js into the www/worklight/cordova_plugins.js file (in your native Worklight project) at the end of the plugins list that is already present. NOTE: You may need to change this file to read-write in order to do this
+
+# Making Cordova Zip (4.1.2Cesr)
+## Setup corimf-settings.js
+1. Open corimf-settings-js.sample in a text editor.
+1. Set the value of 'BRANCH' to '4.1.2Cesr'
+1. Set the value of 'NEW_TAG' and 'PREV_TAG' to the latest two tags in WL7100*
+1. Set the value of 'BASE_BRANCH' to '4.1.x'
+1. Make sure 'PLUGIN_COUNT = 19' and the three lines below it are uncommented, while the five lines above it are commented out.
+1. In 'PLATFORM_REPOS', delete all values except for 'cordova-android' and 'cordova-ios'
+1. In 'OTHER_REPOS', delete all values except for 'cordova-cli'
+1. Go to File in the Menu Bar and click Save As; filename is 'corimf-settings.js' and make sure to save as a JavaScript file.
+
+## Making zip
+1. In the cordova folder with all the repos, run the following scripts:
+    1. node build-tools/corimf-catchup-corimf.js
+    2. node build-tools/install-production.js
+1. Make a zip folder called cordova.zip
+1. Add the following repos to the zip: cordova-android, cordova-ios, cordova-cli, all of the plugins, ios-deploy, and ios-sim
