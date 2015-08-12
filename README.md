@@ -112,15 +112,15 @@ To get mobilespec running inside a Worklight project, follow these steps:
 1. Copy the whitelist from mobilespec's config.xml to the config.xml in your Worklight project located in yourProject -> apps -> yourProject -> whatever platform -> native
 1. For Android platform, copy the following permissions into the AndroidManifest.xml:
 
-    ```<uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.RECORD_VIDEO" />
-    <uses-permission android:name="android.permission.VIBRATE" />```
+        <uses-permission android:name="android.permission.READ_CONTACTS" />
+        <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <uses-permission android:name="android.permission.RECORD_AUDIO" />
+        <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+        <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+        <uses-permission android:name="android.permission.RECORD_VIDEO" />
+        <uses-permission android:name="android.permission.VIBRATE" />
 
 ## New Plugin Test Framework (3.6 >=)
 1. Ensure you have cordova-mobile-spec, cordova-plugin-test-framework, and the plugin repos checked out at the version you need.
