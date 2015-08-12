@@ -129,7 +129,18 @@ To get mobilespec running inside a Worklight project, follow these steps:
 1. Copy all of the files from mobilespec-for-worklight/common into the 'common' directory in your Worklight project. Allow the necessary files to be overwritten.
 1. Copy all of the directories in mobilespec-for-worklight/worklight/plugins into the www/worklight/plugins directory in your native Worklight project. NOTE: You may need to change this directory to read-write in order to do this
 1. Copy the JSON objects in mobilespec-for-worklight/worklight/cordova_plugins.js into the www/worklight/cordova_plugins.js file (in your native Worklight project) at the end of the plugins list that is already present. NOTE: You may need to change this file to read-write in order to do this
+1. For Android platform, copy the following permissions into the AndroidManifest.xml:
 
+        <uses-permission android:name="android.permission.READ_CONTACTS" />
+        <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <uses-permission android:name="android.permission.RECORD_AUDIO" />
+        <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+        <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+        <uses-permission android:name="android.permission.RECORD_VIDEO" />
+        <uses-permission android:name="android.permission.VIBRATE" />
+        
 # Making Cordova Zip (4.1.2Cesr)
 ## Setup corimf-settings.js
 1. Open corimf-settings-js.sample in a text editor.
